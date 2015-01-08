@@ -5,7 +5,7 @@ manage some service
 '''
 
 
-class Management:
+class Manager:
     def start(self):
         raise NotImplementedError
 

@@ -14,4 +14,5 @@ class SimpleTest(scrapy.Spider):
         yield scrapy.Request('http://tieba.baidu.com', callback=self.parse_a)
 
     def parse_a(self, response):
-        return response
+        yield scrapy.Request('http://tieba.baidu.com', callback=self.parse_a)
+        # return response

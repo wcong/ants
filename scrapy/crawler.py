@@ -90,7 +90,9 @@ class CrawlerProcess(object):
 
     def start(self):
         if self.start_crawling():
+            '''
             self.start_reactor()
+            '''
 
     @defer.inlineCallbacks
     def stop(self):

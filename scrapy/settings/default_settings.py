@@ -64,7 +64,7 @@ DOWNLOAD_HANDLERS_BASE = {
     'ftp': 'scrapy.core.downloader.handlers.ftp.FTPDownloadHandler',
 }
 
-DOWNLOAD_TIMEOUT = 180      # 3mins
+DOWNLOAD_TIMEOUT = 180  # 3mins
 
 DOWNLOADER = 'scrapy.core.downloader.Downloader'
 
@@ -109,7 +109,7 @@ EXTENSIONS = {}
 
 EXTENSIONS_BASE = {
     'scrapy.contrib.corestats.CoreStats': 0,
-    'scrapy.webservice.WebService': 0,
+    # 'scrapy.webservice.WebService': 0,
     'scrapy.telnet.TelnetConsole': 0,
     'scrapy.contrib.memusage.MemoryUsage': 0,
     'scrapy.contrib.memdebug.MemoryDebugger': 0,
@@ -175,8 +175,8 @@ MAIL_FROM = 'scrapy@localhost'
 MAIL_PASS = None
 MAIL_USER = None
 
-MEMDEBUG_ENABLED = False        # enable memory debugging
-MEMDEBUG_NOTIFY = []            # send memory debugging report by mail at engine shutdown
+MEMDEBUG_ENABLED = False  # enable memory debugging
+MEMDEBUG_NOTIFY = []  # send memory debugging report by mail at engine shutdown
 
 MEMUSAGE_ENABLED = False
 MEMUSAGE_LIMIT_MB = 0
@@ -222,7 +222,7 @@ SPIDER_MIDDLEWARES_BASE = {
     # Spider side
 }
 
-SPIDER_MODULES = []
+SPIDER_MODULES = ['spider']
 
 STATS_CLASS = 'scrapy.statscol.MemoryStatsCollector'
 STATS_DUMP = True
