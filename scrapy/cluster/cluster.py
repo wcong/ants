@@ -4,6 +4,18 @@ what a cluster should have
 __author__ = 'wcong'
 from scrapy.node import node
 import discover
+from scrapy import manager
+
+
+class ClusterManager(manager.Manager):
+    def __init__(self, cluster_info):
+        self.cluster_info = cluster_info
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
 
 
 class ClusterInfo():

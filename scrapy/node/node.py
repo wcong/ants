@@ -1,5 +1,28 @@
 __author__ = 'wcong'
 import json
+from scrapy import manager
+
+
+'''
+what a node would do
+init multicast
+init transport
+open spider
+accept request and deal with it
+'''
+
+
+class NodeManager(manager.Manager):
+    def __init__(self, cluster_manager, crawl_manager):
+        self.cluster_manager = cluster_manager
+        self.crawl_manager = crawl_manager
+
+
+    def stop(self):
+        pass
+
+    def start(self):
+        pass
 
 
 class Node():

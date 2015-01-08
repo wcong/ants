@@ -4,13 +4,13 @@ test multicast
 __author__ = 'wcong'
 
 import unittest
-from scrapy.cluster import clusterinfo
+from scrapy.cluster import cluster
 from scrapy.node import multicast
 
 
 class MulticastTest(unittest.TestCase):
     def test(self):
-        cluster = clusterinfo.ClusterInfo(name='test_cluster')
+        cluster = cluster.ClusterInfo(name='test_cluster')
         multicast_node = multicast.MulticastManager(cluster, self.print_result)
         multicast_node.cast()
         multicast_node.find_node()
