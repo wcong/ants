@@ -13,19 +13,19 @@ import json
 
 
 class WebServiceManager(manager.Manager):
-    def __init__(self, port, cluster_info, crawl_manager):
-        self.port = port
-        self.cluster_info = cluster_info
+    def __init__(self, setting, node_manager):
+        self.setting = setting
+        self.port = self.setting.get('HTTP_PORT')
+        self.node_manager = node_manager
         self.start_time = datetime.datetime.now()
-        self.crawl_manager = crawl_manager
         self.__init_service()
 
     def __init_service(self):
-        resource = Service(self.cluster_info)
-        resource.putChild('node', NodeService(self.cluster_info))
-        resource.putChild('spider_list', SpiderListService(self.cluster_info, self.crawl_manager))
-        resource.putChild('crawl', CrawlService(self.cluster_info, self.crawl_manager))
-        resource.putChild('crawl_status', CrawlStatusService(self.cluster_info, self.crawl_manager))
+        resource = Service(self.node_manager)
+        resource.putChild('node', NodeService(self.node_manager))
+        resource.putChild('spider_list', SpiderListService(self.node_manager))
+        resource.putChild('crawl', CrawlService(self.node_manager))
+        resource.putChild('crawl_status', CrawlStatusService(self.node_manager))
         self.service = server.Site(resource)
 
     def start(self):
@@ -34,13 +34,14 @@ class WebServiceManager(manager.Manager):
     def stop(self):
         now = datetime.datetime.now()
         log.msg(
-            "start in :" + self.start_time.strftime("%Y-%m-%d %H:%M:%S") + ';end:' + now.strftime("%Y-%m-%d %H:%M:%S"))
+            "webservice start in :" + self.start_time.strftime("%Y-%m-%d %H:%M:%S") + ';end:' + now.strftime(
+                "%Y-%m-%d %H:%M:%S"))
 
 
 class Service(resource.Resource):
-    def __init__(self, cluster_info):
+    def __init__(self, node_manager):
         resource.Resource.__init__(self)
-        self.cluster_info = cluster_info
+        self.cluster_info = node_manager
 
     def getChild(self, path, request):
         if path == '':
@@ -57,26 +58,23 @@ class Service(resource.Resource):
 
 class NodeService(Service):
     def render_GET(self, request):
-        return json.dumps(self.cluster_info, cls=JSON)
+        return json.dumps(self.node_manager.cluster_manager.cluster_info, cls=JSON)
 
 
 class SpiderListService(Service):
-    def __init__(self, cluster_info, crawl_manager):
-        Service.__init__(self, cluster_info)
-        self.crawl_manager = crawl_manager
 
     def render_GET(self, request):
-        return json.dumps(self.crawl_manager.spider_list())
+        return json.dumps(self.node_manager.crawl_manager.spider_list())
 
 
 class CrawlService(Service):
-    def __init__(self, cluster_info, crawl_manager):
-        Service.__init__(self, cluster_info)
-        self.crawl_manager = crawl_manager
+    '''
+    send to node that we should start a crawl job
+    '''
 
     def render_GET(self, request):
         spider_name = request.args['spider'][0]
-        self.crawl_manager.start_crawl(spider_name)
+        self.node_manager.start_a_crawl(spider_name)
         data = dict()
         data['spider_name'] = spider_name
         data['start_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -84,12 +82,8 @@ class CrawlService(Service):
 
 
 class CrawlStatusService(Service):
-    def __init__(self, cluster_info, crawl_manager):
-        Service.__init__(self, cluster_info)
-        self.crawl_manager = crawl_manager
-
     def render_GET(self, request):
-        return json.dumps(self.crawl_manager.crawler.stats.get_stats(), cls=JSON)
+        return json.dumps(self.node_manager.crawl_manager.crawler.stats.get_stats(), cls=JSON)
 
 
 

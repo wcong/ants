@@ -31,10 +31,10 @@ import datetime
 
 
 class CrawlManager(manager.Manager):
-    def __init__(self, setting, cluster_info):
-        self.cluster_info = cluster_info
+    def __init__(self, setting, node_manager):
         self.setting = setting
         self.spider_manager = spidermanager.SpiderManager(setting.get('SPIDER_MODULES'))
+        self.node_manager = node_manager
         self.crawler_process = crawler.CrawlerProcess(self.setting)
         self.crawler = self.crawler_process.create_crawler("main")
 

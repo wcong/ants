@@ -1,36 +1,58 @@
 __author__ = 'wcong'
 import json
 from scrapy import manager
+import multicast
+import transport
+from scrapy.webservice import webservice
+from scrapy.cluster import cluster
+from scrapy.crawl import crawl
+from twisted.internet import defer
 
 
 '''
 what a node would do
 init multicast
 init transport
+init web service
 open spider
+
 accept request and deal with it
 '''
 
 
 class NodeManager(manager.Manager):
-    def __init__(self, cluster_manager, crawl_manager):
-        self.cluster_manager = cluster_manager
-        self.crawl_manager = crawl_manager
+    def __init__(self, setting):
+        self.setting = setting
+        self.node_info = NodeInfo(multicast.get_host_name(), self.setting.get('TRANSPORT_PORT'))
+        self.cluster_manager = cluster.ClusterManager(setting, self.node_info)
+        self.crawl_manager = crawl.CrawlManager(self.setting, self)
+        self.transport_manager = transport.TransportManager(setting, self)
+        self.multicast_manager = multicast.MulticastManager(self.setting, self, self.cluster_manager.find_node())
+        self.webservice_manager = webservice.WebServiceManager(self.setting, self, self.crawl_manager)
+
+        self.manager_list = [self.cluster_manager, self.crawl_manager, self.transport_manager, self.multicast_manager,
+                             self.webservice_manager]
 
 
     def stop(self):
-        pass
+        for inner_manager in self.manager_list:
+            inner_manager.stop()
+
 
     def start(self):
-        pass
+        '''
+        we start all the manager
+        find node
+        and ready to start
+        :return:
+        '''
+        for inner_manager in self.manager_list:
+            inner_manager.start()
+        self.multicast_manager.find_node()
 
 
-class Node():
-    ip = '127.0.0.1'
-    port = '8200'
-
-    def __init__(self):
-        self.node_info = NodeInfo(self.ip, self.port)
+    def start_a_crawl(self, spider_name):
+        self.cluster_manager.start_a_crawl(spider_name)
 
 
 class NodeInfo:
@@ -38,6 +60,9 @@ class NodeInfo:
         self.name = hash(ip + str(port))
         self.ip = ip
         self.port = port
+
+    def __eq__(self, other):
+        return self.name == other.name
 
 
 def make_node_info_from_transport(data):

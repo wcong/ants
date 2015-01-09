@@ -3,6 +3,7 @@ __author__ = 'wcong'
 import socket
 import threading
 import time
+from scrapy import manager
 
 '''
 this multicast file where all multicast tools
@@ -33,7 +34,7 @@ def make_cast_socket(ip, post):
     return cast_sock
 
 
-class MulticastManager:
+class MulticastManager(manager.Manager):
     '''
     what we do
     start a cast
@@ -41,17 +42,25 @@ class MulticastManager:
     send message
     '''
     ip = '224.1.1.1'
-    port = 8200
+    port = 8900
+    receive_length = 22
 
-    def __init__(self, cluster_info, receive_callback=None):
-        self.cluster_info = cluster_info
-        self.message = cluster_info.name
+    def __init__(self, setting, node_manager, receive_callback=None):
+        self.setting = setting
+        self.node_manager = node_manager
+        self.message = self.setting.get('CLUSTER_NAME') + ':' + self.setting.get('TRANSPORT_PORT')
         self.cast_sock = make_cast_socket(self.ip, self.port)
         self.receive_sock = make_receive_socket(self.ip, self.port)
         self.start_time = time.time()
         self.multicast_status = MulticastStatus()
         self.receive_callback = receive_callback
 
+
+    def stop(self):
+        self.stop_cast()
+
+    def start(self):
+        self.cast()
 
     def cast(self):
         multicast_thread = MulticastThread(self)
@@ -70,7 +79,7 @@ class MulticastManager:
         receive_thread.start()
 
     def get_message(self):
-        data, addr = self.receive_sock.recvfrom(len(self.message))
+        data, addr = self.receive_sock.recvfrom(self.receive_length)
         return data, addr
 
 
@@ -103,7 +112,7 @@ class ReceiveThread(threading.Thread):
             data, addr = self.multicast.get_message()
             if data == self.multicast.message:
                 if self.multicast.receive_callback:
-                    self.multicast.receive_callback(addr)
+                    self.multicast.receive_callback(data, addr)
 
 
 class MulticastThread(threading.Thread):

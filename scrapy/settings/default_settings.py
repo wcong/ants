@@ -256,3 +256,10 @@ SPIDER_CONTRACTS_BASE = {
     'scrapy.contracts.default.ReturnsContract': 2,
     'scrapy.contracts.default.ScrapesContract': 3,
 }
+'''
+this is where cluster setting
+'''
+
+CLUSTER_NAME = 'scale-crawl'
+TRANSPORT_PORT = 8300
+HTTP_PORT = 8200

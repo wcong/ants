@@ -5,16 +5,15 @@ from setuptools import setup, find_packages
 with open(join(dirname(__file__), 'scrapy/VERSION'), 'rb') as f:
     version = f.read().decode('ascii').strip()
 
-
 setup(
-    name='Scrapy',
+    name='Scale-Crawl',
     version=version,
-    url='http://scrapy.org',
-    description='A high-level Python Screen Scraping framework',
+    url='https://github.com/wcong/scale-crawl',
+    description='A Scale Crawler from scrapy',
     long_description=open('README.rst').read(),
     author='Scrapy developers',
-    maintainer='Pablo Hoffman',
-    maintainer_email='pablo@pablohoffman.com',
+    maintainer='Wcong',
+    maintainer_email='wc19920415@gmail.com',
     license='BSD',
     packages=find_packages(),
     include_package_data=True,

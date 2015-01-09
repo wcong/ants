@@ -2,6 +2,7 @@
 __author__ = 'wcong'
 
 from twisted.internet import reactor, protocol
+from scrapy import manager
 
 '''
 transport tools
@@ -10,7 +11,7 @@ co
 '''
 
 
-class TransportManager:
+class TransportManager(manager.Manager):
     '''
     what we do
     start a server
@@ -21,16 +22,23 @@ class TransportManager:
     then we what to use it,but twisted is non-block so, we do not know when the connection is available,
     but it is ok,because we could trust it until is response
     '''
-    port = 8000
 
-    def __init__(self, cluster_info):
-        self.cluster_info = cluster_info
+    def __init__(self, setting, node_manager):
+        self.setting = setting
+        self.port = self.setting.get('TRANSPORT_PORT')
+        self.node_manager = node_manager
         self.client_factory = TransportClientFactory(self)
         self.server_factory = protocol.ServerFactory()
         self.server_factory.protocol = TransportServer
 
-    def run_client(self, ip='127.0.0.1'):
-        reactor.connectTCP(ip, self.port, self.client_factory)
+    def start(self):
+        self.run_server()
+
+    def stop(self):
+        pass
+
+    def run_client(self, ip, port):
+        reactor.connectTCP(ip, port, self.client_factory)
 
     def send_request(self, ip, message):
         self.client_factory.client_dict[ip].send_message(message)
@@ -40,6 +48,9 @@ class TransportManager:
 
     def run_server(self):
         reactor.listenTCP(self.port, self.server_factory)
+
+    def connect_made(self, ip, port):
+        self.node_manager.cluster_manager.add_node()
 
 
 class TransportServer(protocol.Protocol):
@@ -54,12 +65,12 @@ class TransportClient(protocol.Protocol):
 
     def connectionMade(self):
         self.factory.client_dict[self.addr.host] = self
+        self.factory.transport_manager.connect_made(self.addr.host)
 
     def send_message(self, message):
         self.transport.write(message)
 
     def dataReceived(self, data):
-        "As soon as any data is received, write it back."
         self.factory.transport_manager.manager_data(data, self.addr)
 
     def connectionLost(self, reason):
