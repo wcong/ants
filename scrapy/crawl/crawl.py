@@ -64,6 +64,8 @@ class CrawlManager(manager.Manager):
         self.crawler.engine.slot.scheduler.enqueue_request(request)
 
 
+
+
 class ClassJobs():
     def __init__(self, crawl_name, status):
         self.crawl_name = crawl_name

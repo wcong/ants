@@ -1,2 +1,4 @@
-The guidelines for contributing are available here:
-http://doc.scrapy.org/en/latest/contributing.html
+### welcome
+Contributing is great  
+
+but I have not finish the application , so allow me finish it first
