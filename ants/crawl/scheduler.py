@@ -3,9 +3,7 @@ __author__ = 'wcong'
 
 
 class SchedulerServer():
-    '''
 
-    '''
 
 
 class SchedulerClient():

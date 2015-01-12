@@ -260,6 +260,6 @@ SPIDER_CONTRACTS_BASE = {
 this is where cluster setting
 '''
 
-CLUSTER_NAME = 'scale-crawl'
+CLUSTER_NAME = 'ants'
 TRANSPORT_PORT = 8300
 HTTP_PORT = 8200

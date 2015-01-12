@@ -8,7 +8,7 @@ with open(join(dirname(__file__), 'ants/VERSION'), 'rb') as f:
 setup(
     name='Scale-Crawl',
     version=version,
-    url='https://github.com/wcong/scale-crawl',
+    url='https://github.com/wcong/ants',
     description='A Scale Crawler from ants',
     long_description=open('README.rst').read(),
     author='Scrapy developers',
