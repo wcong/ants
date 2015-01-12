@@ -1,11 +1,11 @@
 __author__ = 'wcong'
 
-from scrapy.webservice import webservice
-from scrapy.cluster import cluster
-from scrapy.crawl import crawl
+from ants.webservice import webservice
+from ants.cluster import cluster
+from ants.crawl import crawl
 from twisted.internet import reactor
 import unittest
-from scrapy import settings
+from ants import settings
 
 
 class WebServiceTest(unittest.TestCase):

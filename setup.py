@@ -2,14 +2,14 @@ from os.path import dirname, join
 from setuptools import setup, find_packages
 
 
-with open(join(dirname(__file__), 'scrapy/VERSION'), 'rb') as f:
+with open(join(dirname(__file__), 'ants/VERSION'), 'rb') as f:
     version = f.read().decode('ascii').strip()
 
 setup(
     name='Scale-Crawl',
     version=version,
     url='https://github.com/wcong/scale-crawl',
-    description='A Scale Crawler from scrapy',
+    description='A Scale Crawler from ants',
     long_description=open('README.rst').read(),
     author='Scrapy developers',
     maintainer='Wcong',
@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     entry_points={
-        'console_scripts': ['scrapy = scrapy.cmdline:execute']
+        'console_scripts': ['ants = ants.cmdline:execute']
     },
     classifiers=[
         'Framework :: Scrapy',

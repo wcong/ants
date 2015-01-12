@@ -1,8 +1,8 @@
 __author__ = 'wcong'
 import unittest
-from scrapy.crawl import crawl
-from scrapy import settings
-from scrapy import log
+from ants.crawl import crawl
+from ants import settings
+from ants import log
 from twisted.internet import reactor
 
 

@@ -1,9 +1,9 @@
 # encoding=utf8
 __author__ = 'wcong'
-import scrapy
+import ants
 
 
-class SimpleTest(scrapy.Spider):
+class SimpleTest(ants.Spider):
     name = "simple_test"
 
     start_urls = [
@@ -11,8 +11,8 @@ class SimpleTest(scrapy.Spider):
     ]
 
     def parse(self, response):
-        yield scrapy.Request('http://tieba.baidu.com', callback=self.parse_a)
+        yield ants.Request('http://tieba.baidu.com', callback=self.parse_a)
 
     def parse_a(self, response):
-        yield scrapy.Request('http://tieba.baidu.com', callback=self.parse_a)
+        yield ants.Request('http://tieba.baidu.com', callback=self.parse_a)
         # return response

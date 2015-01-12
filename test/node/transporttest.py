@@ -2,8 +2,8 @@ __author__ = 'wcong'
 
 import unittest
 import time
-from scrapy.node import transport
-from scrapy.cluster import cluster
+from ants.node import transport
+from ants.cluster import cluster
 from twisted.internet import reactor
 import threading
 

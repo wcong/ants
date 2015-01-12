@@ -4,8 +4,8 @@ test multicast
 __author__ = 'wcong'
 
 import unittest
-from scrapy.cluster import cluster
-from scrapy.node import multicast
+from ants.cluster import cluster
+from ants.node import multicast
 
 
 class MulticastTest(unittest.TestCase):

@@ -7,8 +7,8 @@ usage:
 
 """
 
-from scrapy.spider import Spider
-from scrapy.http import Request
+from ants.spider import Spider
+from ants.http import Request
 
 
 class QPSSpider(Spider):

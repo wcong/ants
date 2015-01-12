@@ -15,7 +15,7 @@ from __future__ import print_function
 import sys, optparse, urllib, json
 from urlparse import urljoin
 
-from scrapy.utils.jsonrpc import jsonrpc_client_call, JsonRpcError
+from ants.utils.jsonrpc import jsonrpc_client_call, JsonRpcError
 
 def get_commands():
     return {

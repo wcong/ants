@@ -1,9 +1,9 @@
 # encoding=utf8
 __author__ = 'wcong'
-import scrapy
+import ants
 
 
-class DeadLoopTest(scrapy.Spider):
+class DeadLoopTest(ants.Spider):
     name = "dead_loop_test"
 
     start_urls = [
@@ -13,5 +13,5 @@ class DeadLoopTest(scrapy.Spider):
 
     def parse(self, response):
         nextpage = response.xpath('//div[@id="page"]/a[contains(text(),"' + '下一页'.decode("utf-8") + '")]/@href').extract()[0]
-        yield scrapy.Request(self.domain + nextpage, callback=self.parse)
+        yield ants.Request(self.domain + nextpage, callback=self.parse)
 

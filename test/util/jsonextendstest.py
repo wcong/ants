@@ -3,7 +3,7 @@ __author__ = 'wcong'
 import unittest
 import datetime
 import json
-from scrapy.utils.jsonextends import JSON
+from ants.utils.jsonextends import JSON
 
 
 class JSONExtendsTest(unittest.TestCase):

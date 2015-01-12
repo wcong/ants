@@ -18,7 +18,7 @@ from os import path
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.append(path.join(path.dirname(__file__), "_ext"))
-sys.path.append(path.join(path.dirname(path.dirname(__file__)), "scrapy"))
+sys.path.append(path.join(path.dirname(path.dirname(__file__)), "ants"))
 
 
 # General configuration
@@ -50,9 +50,9 @@ copyright = u'2008-2013, Scrapy developers'
 #
 # The short X.Y version.
 try:
-    import scrapy
-    version = '.'.join(map(str, scrapy.version_info[:2]))
-    release = scrapy.__version__
+    import ants
+    version = '.'.join(map(str, ants.version_info[:2]))
+    release = ants.__version__
 except ImportError:
     version = ''
     release = ''
@@ -200,6 +200,6 @@ latex_documents = [
 # A list of regular expressions that match URIs that should not be checked when
 # doing a linkcheck build.
 linkcheck_ignore = [
-    'http://localhost:\d+', 'http://hg.scrapy.org',
+    'http://localhost:\d+', 'http://hg.ants.org',
     'http://directory.google.com/'
 ]

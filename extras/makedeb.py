@@ -1,9 +1,9 @@
 import sys, os, glob, shutil
 from subprocess import check_call
-from scrapy import version_info
+from ants import version_info
 
 def build(suffix):
-    for ifn in glob.glob("debian/scrapy.*"):
+    for ifn in glob.glob("debian/ants.*"):
         s = open(ifn).read()
         s = s.replace('SUFFIX', suffix)
         pre, suf = ifn.split('.', 1)
@@ -22,7 +22,7 @@ def build(suffix):
     check_call('debuild -us -uc -b', shell=True)
 
 def clean(suffix):
-    for f in glob.glob("debian/python-scrapy%s*" % suffix):
+    for f in glob.glob("debian/python-ants%s*" % suffix):
         if os.path.isdir(f):
             shutil.rmtree(f)
         else:
