@@ -36,6 +36,7 @@ class ClusterManager(manager.Manager):
             return
         self.node_manager.transport_manager.run_client(ip, port)
 
+
     def add_request(self, request):
         self.crawl_server.accept_request(request.spider_name, request)
 
@@ -62,6 +63,10 @@ class ClusterManager(manager.Manager):
         self.crawl_server.init_spider_dict[spider_name].remove(nodeinfo)
         if len(self.crawl_server.init_spider_dict[spider_name]) == 0:
             self.crawl_server.run_engine(spider_name)
+
+    def start_a_engine(self, spider_name):
+        self.crawl_server.init_spider_job(spider_name)
+        self.init_all_node(spider_name)
 
 
 class ClusterInfo():

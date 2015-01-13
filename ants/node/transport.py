@@ -3,6 +3,7 @@ __author__ = 'wcong'
 
 from twisted.internet import reactor, protocol
 from ants import manager
+import logging
 import rpc
 
 '''
@@ -48,6 +49,7 @@ class TransportManager(manager.Manager):
         print 'get data from :' + addr.host + ':' + data
 
     def run_server(self):
+        logging.info('start tcp server:' + str(self.port))
         reactor.listenTCP(self.port, self.server_factory)
 
     def connect_made(self, ip, port):
@@ -62,6 +64,7 @@ class TransportServer(protocol.Protocol):
         self.response_dict[rpc.RESPONSE_INIT_REQUEST] = self.response_init_engine
         self.response_dict[rpc.REQUEST_IS_SPIDER_IDLE] = self.request_is_spider_idle
         self.response_dict[rpc.RESPONSE_SPIDER_IDLE_STATUS] = self.response_spider_idle_status
+        self.response_dict[rpc.REQUEST_START_A_ENGINE] = self.request_start_a_engine
 
 
     def request_init_engine(self, msg):
@@ -82,6 +85,9 @@ class TransportServer(protocol.Protocol):
         is_idle = True if msg[1] == 'true' else False
         if is_idle:
             self.factory.node_manager.idle_engine_manager(spider_name, self.addr.host, self.addr.port)
+
+    def request_start_a_engine(self, msg):
+        self.factory.node_manager.start_a_engine(msg)
 
     def dataReceived(self, data):
         type = data[0:rpc.LENGTH]

@@ -79,8 +79,8 @@ class CrawlClient():
     def __init__(self, node_manager):
         self.status = self.STATUS_STOP
         self.node_manager = node_manager
-        self.spider_manager = spidermanager.SpiderManager(node_manager.setting.get('SPIDER_MODULES'))
-        self.scheduler = scheduler.SchedulerClient(node_manager.setting)
+        self.spider_manager = spidermanager.SpiderManager(node_manager.settings.get('SPIDER_MODULES'))
+        self.scheduler = scheduler.SchedulerClient(node_manager.settings)
         self.running_spider_dict = dict()
 
     def spider_list(self):
@@ -90,7 +90,7 @@ class CrawlClient():
         if spider_name in self.running_spider_dict:
             raise RunningJobException()
         spider = self.spider_manager.create(spider_name)
-        crawl_engine = engine.EngineClient(spider, self.node_manager, self.schedule)
+        crawl_engine = engine.EngineClient(spider, self.node_manager, self.scheduler)
         self.running_spider_dict[spider_name] = crawl_engine
 
     def run(self, spider_name):

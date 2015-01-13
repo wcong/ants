@@ -9,6 +9,7 @@ from ants.crawl import crawl
 import nodeinfo
 import rpc
 from ants.utils import jsonextends
+from ants import log
 
 
 '''
@@ -49,9 +50,11 @@ class NodeManager(manager.Manager):
         and ready to start
         :return:
         '''
+        log.msg('start to init manager')
         for inner_manager in self.manager_list:
             inner_manager.start()
-        self.multicast_manager.find_node()
+
+        self.multicast_manager.cast()
 
 
     def is_idle(self, spider_name, node=None):
@@ -87,6 +90,15 @@ class NodeManager(manager.Manager):
         else:
             self.transport_manager.send_request(node.ip, node.port,
                                                 rpc.REQUEST_SEND_REQUEST + json.dumps(request, cls=jsonextends.JSON))
+
+
+    def start_a_engine(self, spider_name):
+        master_node = self.cluster_manager.cluster_info.master_node
+        if self.node_info == master_node:
+            self.cluster_manager.start_a_engine(spider_name)
+        else:
+            self.transport_manager.send_request(master_node.ip, master_node.port,
+                                                rpc.REQUEST_START_A_ENGINE + spider_name)
 
 
 

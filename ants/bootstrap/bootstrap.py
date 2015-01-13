@@ -5,6 +5,7 @@ import sys
 from twisted.internet import reactor
 from ants.node import node
 from ants import settings
+import logging
 
 '''
 what we do
@@ -24,6 +25,9 @@ class Bootstrap():
     '''
 
     def start(self):
+        logging.basicConfig(format="[%(asctime)s %(name)s %(module)s %(lineno)d]%(levelname)s:%(message)s",
+                            datefmt='%Y-%m-%d %H:%M:%S',
+                            level=logging.INFO)
         setting = settings.Settings()
         node_manager = node.NodeManager(setting)
         node_manager.start()

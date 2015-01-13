@@ -4,6 +4,7 @@ import socket
 import threading
 import time
 from ants import manager
+import logging
 
 '''
 this multicast file where all multicast tools
@@ -20,6 +21,7 @@ def make_receive_socket(ip, port):
     receive_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     receive_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
     receive_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+    logging.info('start multicast server')
     receive_sock.bind((ip, port))
     host = get_host_name()
     receive_sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(host))
@@ -60,7 +62,7 @@ class MulticastManager(manager.Manager):
         self.stop_cast()
 
     def start(self):
-        self.cast()
+        self.find_node()
 
     def cast(self):
         multicast_thread = MulticastThread(self)
@@ -75,6 +77,7 @@ class MulticastManager(manager.Manager):
         self.cast_sock.sendto(self.message, (self.ip, self.port))
 
     def find_node(self):
+        logging.info('start multicast receive thread')
         receive_thread = ReceiveThread(self)
         receive_thread.start()
 
@@ -102,6 +105,8 @@ class MulticastStatus:
 
 
 class ReceiveThread(threading.Thread):
+    sleep_time = 1
+
     def __init__(self, multicast):
         super(ReceiveThread, self).__init__()
         self.multicast = multicast
@@ -113,17 +118,13 @@ class ReceiveThread(threading.Thread):
             if data == self.multicast.message:
                 if self.multicast.receive_callback:
                     self.multicast.receive_callback(data, addr)
+            time.sleep(self.sleep_time)
 
 
 class MulticastThread(threading.Thread):
-    sleep_time = 1
-
     def __init__(self, multicast):
         super(MulticastThread, self).__init__()
         self.multicast = multicast
 
     def run(self):
-        self.multicast.multicast_status.run()
-        while self.multicast.multicast_status.is_run():
-            time.sleep(MulticastThread.sleep_time)
-            self.multicast.send_message()
+        self.multicast.send_message()

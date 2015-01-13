@@ -6,15 +6,16 @@ control crawl and get crawl status
 
 from twisted.web import server, resource
 from twisted.internet import reactor
-from ants import manager, log
+from ants import manager
 from ants.utils.jsonextends import JSON
 import datetime
 import json
+import logging
 
 
 class WebServiceManager(manager.Manager):
     def __init__(self, node_manager):
-        self.setting = node_manager.setting
+        self.setting = node_manager.settings
         self.port = self.setting.get('HTTP_PORT')
         self.node_manager = node_manager
         self.start_time = datetime.datetime.now()
@@ -29,11 +30,12 @@ class WebServiceManager(manager.Manager):
         self.service = server.Site(resource)
 
     def start(self):
+        logging.info("start web service,port:" + str(self.port))
         reactor.listenTCP(self.port, self.service)
 
     def stop(self):
         now = datetime.datetime.now()
-        log.msg(
+        logging.info(
             "webservice start in :" + self.start_time.strftime("%Y-%m-%d %H:%M:%S") + ';end:' + now.strftime(
                 "%Y-%m-%d %H:%M:%S"))
 
@@ -41,7 +43,7 @@ class WebServiceManager(manager.Manager):
 class Service(resource.Resource):
     def __init__(self, node_manager):
         resource.Resource.__init__(self)
-        self.cluster_info = node_manager
+        self.node_manager = node_manager
 
     def getChild(self, path, request):
         if path == '':
@@ -63,7 +65,7 @@ class NodeService(Service):
 
 class SpiderListService(Service):
     def render_GET(self, request):
-        return json.dumps(self.node_manager.crawl_manager.spider_list())
+        return json.dumps(self.node_manager.crawl_client.spider_list())
 
 
 class CrawlService(Service):
@@ -73,7 +75,7 @@ class CrawlService(Service):
 
     def render_GET(self, request):
         spider_name = request.args['spider'][0]
-        self.node_manager.start_a_crawl(spider_name)
+        self.node_manager.start_a_engine(spider_name)
         data = dict()
         data['spider_name'] = spider_name
         data['start_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -82,7 +84,7 @@ class CrawlService(Service):
 
 class CrawlStatusService(Service):
     def render_GET(self, request):
-        return json.dumps(self.node_manager.crawl_manager.crawler.stats.get_stats(), cls=JSON)
+        return json.dumps(self.node_manager.crawl_client.status.get_stats(), cls=JSON)
 
 
 

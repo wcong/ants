@@ -161,7 +161,7 @@ ITEM_PIPELINES_BASE = {}
 LOG_ENABLED = True
 LOG_ENCODING = 'utf-8'
 LOG_FORMATTER = 'ants.logformatter.LogFormatter'
-LOG_STDOUT = False
+LOG_STDOUT = True
 LOG_LEVEL = 'DEBUG'
 LOG_FILE = None
 
