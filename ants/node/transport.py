@@ -25,8 +25,8 @@ class TransportManager(manager.Manager):
     '''
 
     def __init__(self, node_manager):
-        self.setting = node_manager.setting
-        self.port = self.setting.get('TRANSPORT_PORT')
+        self.settings = node_manager.settings
+        self.port = self.settings.get('TRANSPORT_PORT')
         self.node_manager = node_manager
         self.client_factory = TransportClientFactory(self)
         self.server_factory = protocol.ServerFactory()

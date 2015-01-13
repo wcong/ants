@@ -46,9 +46,9 @@ class MulticastManager(manager.Manager):
     receive_length = 22
 
     def __init__(self, node_manager, receive_callback=None):
-        self.setting = node_manager.setting
+        self.settings = node_manager.settings
         self.node_manager = node_manager
-        self.message = self.setting.get('CLUSTER_NAME') + ':' + str(self.setting.get('TRANSPORT_PORT'))
+        self.message = self.settings.get('CLUSTER_NAME') + ':' + str(self.settings.get('TRANSPORT_PORT'))
         self.cast_sock = make_cast_socket(self.ip, self.port)
         self.receive_sock = make_receive_socket(self.ip, self.port)
         self.start_time = time.time()

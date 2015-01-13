@@ -64,13 +64,11 @@ def _get_concurrency_delay(concurrency, spider, settings):
 
 
 class Downloader(object):
-
-    def __init__(self, crawler):
-        self.settings = crawler.settings
-        self.signals = crawler.signals
+    def __init__(self, engine):
+        self.settings = engine.settings
         self.slots = {}
         self.active = set()
-        self.handlers = DownloadHandlers(crawler)
+        self.handlers = DownloadHandlers(engine)
         self.total_concurrency = self.settings.getint('CONCURRENT_REQUESTS')
         self.domain_concurrency = self.settings.getint('CONCURRENT_REQUESTS_PER_DOMAIN')
         self.ip_concurrency = self.settings.getint('CONCURRENT_REQUESTS_PER_IP')
@@ -161,6 +159,7 @@ class Downloader(object):
                                         request=request,
                                         spider=spider)
             return response
+
         dfd.addCallback(_downloaded)
 
         # 3. After response arrives,  remove the request from transferring

@@ -4,15 +4,20 @@ import datetime
 import scheduler
 import scrapy
 from twisted.internet import reactor
-from ants.core import downloader
+import downloader
+from ants.extension import ExtensionManager
+from ants.signalmanager import SignalManager
+from ants.http import Response, Request
+from ants import log, signals
+from twisted.python.failure import Failure
 
 
 class EngineServer():
-    def __init__(self, spider, cluster):
+    def __init__(self, spider, cluster_manager):
         self.spider = spider
-        self.cluster = cluster
+        self.cluster_manager = cluster_manager
         self.status = EngineStatus()
-        self.scheduler = scheduler.SchedulerServer(cluster.setting)
+        self.scheduler = scheduler.SchedulerServer(cluster_manager.settings)
         self.distribute_index = 0
 
     def add_request(self, request):
@@ -23,26 +28,12 @@ class EngineServer():
         return self.scheduler.next_request()
 
     def start(self):
-        self.cluster.init_all_node(self.spider.name, self.run)
+        self.cluster_manager.init_all_node(self.spider.name, self.run)
 
     def run(self):
         for request in self.spider.start_requests():
             request.spider_name = self.spider.name
             self.scheduler.push_queue_request(request)
-        self.distribute()
-
-    def distribute(self):
-        if self.is_idle():
-            self.cluster.is_all_idle(self.spider.name, self.stop)
-            return
-        request = self.scheduler.next_request()
-        if self.distribute_index > len(self.cluster.cluster_info.node_list):
-            self.distribute_index = 0
-        self.cluster.node_manager.send_request(request)
-        reactor.callLater(0, self)
-
-    def __call__(self, *args, **kwargs):
-        self.distribute()
 
     def stop(self):
         '''
@@ -57,29 +48,66 @@ class EngineServer():
 
 class EngineClient():
     def __init__(self, spider, node_manager, schedule):
-        self.setting = node_manager.setting
+        self.settings = node_manager.settings
         self.node_manager = node_manager
         self.status = EngineStatus()
         self.spider = spider
         self.scheduler = schedule
         self.scraper = scrapy.Scraper(self)
-        self.downloader = downloader.Downloader()
+        self.signals = SignalManager(self)
+        self.downloader = downloader.Downloader(self)
+        self.extension_manager = ExtensionManager(self)
 
-
-    def run(self):
-        if self.is_idle():
-            reactor.callLater(0, self)
-
-
-    def __call__(self, *args, **kwargs):
-        self.run()
-
-    def add_request(self, request):
+    def accept_request(self, request):
         request.spider_name = self.spider.name
         self.scheduler.push_queue_request(request)
 
-    def pop_request(self):
-        return self.scheduler.next_request()
+    def add_request(self, request):
+        request.spider_name = self.spider.name
+        self.node_manager.send_request_to_master(request)
+
+    def crawl_request(self, request):
+        d = self._download(request, self.spider)
+        d.addBoth(self._handle_downloader_output, request, self.spider)
+        d.addErrback(log.msg, spider=self.spider)
+        d.addErrback(log.msg, spider=self.spider)
+        d.addErrback(log.msg, spider=self.spider)
+        return d
+
+    def _handle_downloader_output(self, response, request, spider):
+        assert isinstance(response, (Request, Response, Failure)), response
+        # downloader middleware can return requests (for example, redirects)
+        if isinstance(response, Request):
+            self.add_request(response)
+            return
+        # response is a Response or Failure
+        d = self.scraper.enqueue_scrape(response, request, spider)
+        d.addErrback(log.err, spider=spider)
+        return d
+
+    def download(self, request, spider):
+        d = self._download(request, spider)
+        d.addBoth(self._downloaded, request, spider)
+        return d
+
+    def _downloaded(self, response, request, spider):
+        return self.download(response, spider) \
+            if isinstance(response, Request) else response
+
+    def _download(self, request, spider):
+        def _on_success(response):
+            assert isinstance(response, (Response, Request))
+            if isinstance(response, Response):
+                response.request = request  # tie request to response received
+                logkws = self.logformatter.crawled(request, response, spider)
+                log.msg(spider=spider, **logkws)
+                self.signals.send_catch_log(signal=signals.response_received, \
+                                            response=response, request=request, spider=spider)
+            return response
+
+        dwld = self.downloader.fetch(request, spider)
+        dwld.addCallbacks(_on_success)
+        return dwld
 
 
 class EngineStatus():

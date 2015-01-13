@@ -56,21 +56,21 @@ class Slot(object):
 
 
 class Scraper(object):
-    def __init__(self, engine):
+    def __init__(self, engine, spider):
         self.slot = None
-        self.spidermw = SpiderMiddlewareManager.from_crawler(crawler)
-        itemproc_cls = load_object(crawler.settings['ITEM_PROCESSOR'])
-        self.itemproc = itemproc_cls.from_crawler(crawler)
-        self.concurrent_items = crawler.settings.getint('CONCURRENT_ITEMS')
-        self.crawler = crawler
-        self.signals = crawler.signals
-        self.logformatter = crawler.logformatter
+        self.spidermw = SpiderMiddlewareManager.from_crawler(engine)
 
-    @defer.inlineCallbacks
-    def open_spider(self, spider):
-        """Open the given spider for scraping and allocate resources for it"""
+        itemproc_cls = load_object(engine.settings['ITEM_PROCESSOR'])
+        self.itemproc = itemproc_cls.from_crawler(engine)
+
+        self.concurrent_items = engine.settings.getint('CONCURRENT_ITEMS')
+
+        self.engine = engine
+        self.signals = engine.signals
+
         self.slot = Slot()
-        yield self.itemproc.open_spider(spider)
+        self.itemproc.open_spider(spider)
+
 
     def close_spider(self, spider):
         """Close a spider being scraped and release its resources"""
@@ -99,8 +99,7 @@ class Scraper(object):
             return _
 
         dfd.addBoth(finish_scraping)
-        dfd.addErrback(log.err, 'Scraper bug processing %s' % request, \
-                       spider=spider)
+        dfd.addErrback(log.err, 'Scraper bug processing %s' % request, spider=spider)
         self._scrape_next(spider, slot)
         return dfd
 
@@ -123,13 +122,11 @@ class Scraper(object):
         """Handle the different cases of request's result been a Response or a
         Failure"""
         if not isinstance(request_result, Failure):
-            return self.spidermw.scrape_response(self.call_spider, \
-                                                 request_result, request, spider)
+            return self.spidermw.scrape_response(self.call_spider, request_result, request, spider)
         else:
             # FIXME: don't ignore errors in spider middleware
             dfd = self.call_spider(request_result, request, spider)
-            return dfd.addErrback(self._log_download_errors, \
-                                  request_result, request, spider)
+            return dfd.addErrback(self._log_download_errors, request_result, request, spider)
 
     def call_spider(self, result, request, spider):
         result.request = request
@@ -140,13 +137,11 @@ class Scraper(object):
     def handle_spider_error(self, _failure, request, response, spider):
         exc = _failure.value
         if isinstance(exc, CloseSpider):
-            self.crawler.engine.close_spider(spider, exc.reason or 'cancelled')
+            self.engine.engine.close_spider(spider, exc.reason or 'cancelled')
             return
         log.err(_failure, "Spider error processing %s" % request, spider=spider)
-        self.signals.send_catch_log(signal=signals.spider_error, failure=_failure, response=response, \
-                                    spider=spider)
-        self.crawler.stats.inc_value("spider_exceptions/%s" % _failure.value.__class__.__name__, \
-                                     spider=spider)
+        self.signals.send_catch_log(signal=signals.spider_error, failure=_failure, response=response, pider=spider)
+        self.engine.stats.inc_value("spider_exceptions/%s" % _failure.value.__class__.__name__, spider=spider)
 
     def handle_spider_output(self, result, request, response, spider):
         if not result:
@@ -161,7 +156,7 @@ class Scraper(object):
         from the given spider
         """
         if isinstance(output, Request):
-            self.crawler.engine.crawl(request=output, spider=spider)
+            self.engine.add_request(output)
         elif isinstance(output, BaseItem):
             self.slot.itemproc_size += 1
             dfd = self.itemproc.process_item(output, spider)

@@ -11,9 +11,9 @@ from ants.crawl import scheduler
 
 class ClusterManager(manager.Manager):
     def __init__(self, node_manager):
-        self.setting = node_manager.setting
+        self.settings = node_manager.settings
         self.node_manager = node_manager
-        self.cluster_info = ClusterInfo(self.setting, node_manager.node_info)
+        self.cluster_info = ClusterInfo(self.settings, node_manager.node_info)
         self.crawl_server = crawl.CrawlServer(self)
 
     def start(self):
@@ -36,6 +36,9 @@ class ClusterManager(manager.Manager):
             return
         self.node_manager.transport_manager.run_client(ip, port)
 
+    def add_request(self, request):
+        self.crawl_server.accept_request(request.spider_name, request)
+
     def add_node(self, ip, port):
         log.msg("add ip:" + ip + ';port:' + port + ';node to cluster')
         self.cluster_info.node_list.append(nodeinfo.NodeInfo(ip, port))
@@ -48,7 +51,7 @@ class ClusterManager(manager.Manager):
     def idle_engine_manager(self, spider_name, node_info):
         self.crawl_server.idle_spider_dict[spider_name].remove(node_info)
         if len(self.crawl_server.idle_spider_dict[spider_name]) == 0:
-            self.crawl_server.running_spider_dict[spider_name].stop()
+            self.crawl_server.stop_engine(spider_name)
 
     def init_all_node(self, spider_name):
         self.crawl_server.init_spider_dict[spider_name] = self.cluster_info.node_list
@@ -58,7 +61,7 @@ class ClusterManager(manager.Manager):
     def init_engine_manager(self, spider_name, node_info):
         self.crawl_server.init_spider_dict[spider_name].remove(nodeinfo)
         if len(self.crawl_server.init_spider_dict[spider_name]) == 0:
-            self.crawl_server.running_spider_dict[spider_name].run()
+            self.crawl_server.run_engine(spider_name)
 
 
 class ClusterInfo():

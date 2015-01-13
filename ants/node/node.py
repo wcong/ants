@@ -6,9 +6,9 @@ import transport
 from ants.webservice import webservice
 from ants.cluster import cluster
 from ants.crawl import crawl
-from ants.crawl import scheduler
 import nodeinfo
 import rpc
+from ants.utils import jsonextends
 
 
 '''
@@ -23,9 +23,9 @@ accept request and deal with it
 
 
 class NodeManager(manager.Manager):
-    def __init__(self, setting):
-        self.setting = setting
-        self.node_info = nodeinfo.NodeInfo(multicast.get_host_name(), self.setting.get('TRANSPORT_PORT'))
+    def __init__(self, settings):
+        self.settings = settings
+        self.node_info = nodeinfo.NodeInfo(multicast.get_host_name(), self.settings.get('TRANSPORT_PORT'))
         self.cluster_manager = cluster.ClusterManager(self)
         self.transport_manager = transport.TransportManager(self)
         self.multicast_manager = multicast.MulticastManager(self, self.cluster_manager.find_node)
@@ -74,11 +74,19 @@ class NodeManager(manager.Manager):
     def init_engine_manager(self, spider_name, ip, port):
         self.cluster_manager.init_engine_manager(spider_name, nodeinfo.NodeInfo(ip, port))
 
-    def send_request(self, request, node=None):
+    def send_request_to_client(self, request, node=None):
         if not node or node == self.node_info:
             self.crawl_client.accept_request(request.spider_name, request)
         else:
-            self.transport_manager.send_request(node.ip, node.port,)
+            self.transport_manager.send_request(node.ip, node.port,
+                                                rpc.REQUEST_SEND_REQUEST + json.dumps(request, cls=jsonextends.JSON))
+
+    def send_request_to_master(self, request, node=None):
+        if not node or node == self.node_info:
+            self.cluster_manager.add_request(request)
+        else:
+            self.transport_manager.send_request(node.ip, node.port,
+                                                rpc.REQUEST_SEND_REQUEST + json.dumps(request, cls=jsonextends.JSON))
 
 
 

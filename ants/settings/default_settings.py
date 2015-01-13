@@ -110,7 +110,7 @@ EXTENSIONS = {}
 EXTENSIONS_BASE = {
     'ants.contrib.corestats.CoreStats': 0,
     # 'ants.webservice.WebService': 0,
-    'ants.telnet.TelnetConsole': 0,
+    # 'ants.telnet.TelnetConsole': 0,
     'ants.contrib.memusage.MemoryUsage': 0,
     'ants.contrib.memdebug.MemoryDebugger': 0,
     'ants.contrib.closespider.CloseSpider': 0,
