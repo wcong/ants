@@ -2,6 +2,7 @@
 __author__ = 'wcong'
 from ants.utils.misc import load_object
 from queuelib import PriorityQueue
+from twisted.internet import defer
 
 
 class SchedulerServer():
@@ -13,8 +14,8 @@ class SchedulerServer():
 
     def __init__(self, settings):
         self.settings = settings
-        mq_class = load_object(settings['SCHEDULER_MEMORY_QUEUE'])
-        self.mqs = PriorityQueue(mq_class())
+        self.mq_class = load_object(settings['SCHEDULER_MEMORY_QUEUE'])
+        self.mqs = PriorityQueue(self.priority)
         self.status = ScheduleStatus()
 
     def has_pending_requests(self):
@@ -33,9 +34,11 @@ class SchedulerServer():
     def __len__(self):
         return len(self.mqs)
 
-
     def _mq_push(self, request):
         self.mqs.push(request, -request.priority)
+
+    def priority(self, priority):
+        return self.mq_class()
 
 
 class SchedulerClient():

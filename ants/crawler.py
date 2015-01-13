@@ -12,7 +12,6 @@ from ants import log, signals
 
 
 class Crawler(object):
-
     def __init__(self, settings):
         self.configured = False
         self.settings = settings
@@ -27,12 +26,14 @@ class Crawler(object):
     def install(self):
         # TODO: remove together with ants.project.crawler usage
         import ants.project
+
         assert not hasattr(ants.project, 'crawler'), "crawler already installed"
         ants.project.crawler = self
 
     def uninstall(self):
         # TODO: remove together with ants.project.crawler usage
         import ants.project
+
         assert hasattr(ants.project, 'crawler'), "crawler not installed"
         del ants.project.crawler
 
@@ -64,7 +65,7 @@ class Crawler(object):
         yield defer.maybeDeferred(self.configure)
         if self._spider:
             yield self.engine.open_spider(self._spider, self._start_requests())
-        # yield defer.maybeDeferred(self.engine.start)
+        yield defer.maybeDeferred(self.engine.start)
 
     @defer.inlineCallbacks
     def stop(self):
@@ -90,9 +91,7 @@ class CrawlerProcess(object):
 
     def start(self):
         if self.start_crawling():
-            '''
             self.start_reactor()
-            '''
 
     @defer.inlineCallbacks
     def stop(self):

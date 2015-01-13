@@ -10,6 +10,7 @@ from ants.signalmanager import SignalManager
 from ants.http import Response, Request
 from ants import log, signals
 from twisted.python.failure import Failure
+from ants.utils.misc import load_object
 
 
 class EngineServer():
@@ -51,12 +52,13 @@ class EngineClient():
         self.settings = node_manager.settings
         self.node_manager = node_manager
         self.status = EngineStatus()
+        self.stats = load_object(self.settings['STATS_CLASS'])(self)
         self.spider = spider
         self.scheduler = schedule
-        self.scraper = scrapy.Scraper(self)
         self.signals = SignalManager(self)
         self.downloader = downloader.Downloader(self)
         self.extension_manager = ExtensionManager(self)
+        self.scraper = scrapy.Scraper(self, spider)
 
     def accept_request(self, request):
         request.spider_name = self.spider.name

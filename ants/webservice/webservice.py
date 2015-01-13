@@ -84,7 +84,7 @@ class CrawlService(Service):
 
 class CrawlStatusService(Service):
     def render_GET(self, request):
-        return json.dumps(self.node_manager.crawl_client.status.get_stats(), cls=JSON)
+        return json.dumps(self.node_manager.cluster_manager.crawl_server, cls=JSON)
 
 
 

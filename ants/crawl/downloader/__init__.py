@@ -72,7 +72,7 @@ class Downloader(object):
         self.total_concurrency = self.settings.getint('CONCURRENT_REQUESTS')
         self.domain_concurrency = self.settings.getint('CONCURRENT_REQUESTS_PER_DOMAIN')
         self.ip_concurrency = self.settings.getint('CONCURRENT_REQUESTS_PER_IP')
-        self.middleware = DownloaderMiddlewareManager.from_crawler(crawler)
+        self.middleware = DownloaderMiddlewareManager.from_crawler(engine)
         self._slot_gc_loop = task.LoopingCall(self._slot_gc)
         self._slot_gc_loop.start(60)
 

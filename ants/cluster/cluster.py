@@ -59,8 +59,8 @@ class ClusterManager(manager.Manager):
         for node in self.cluster_info.node_list:
             self.node_manager.init_engine(spider_name, node)
 
-    def init_engine_manager(self, spider_name, node_info):
-        self.crawl_server.init_spider_dict[spider_name].remove(nodeinfo)
+    def init_engine_manager(self, spider_name, inited_node_info):
+        self.crawl_server.init_spider_dict[spider_name].remove(inited_node_info)
         if len(self.crawl_server.init_spider_dict[spider_name]) == 0:
             self.crawl_server.run_engine(spider_name)
 
@@ -75,6 +75,7 @@ class ClusterInfo():
         self.name = self.setting.get('CLUSTER_NAME')
         self.local_node = local_node
         self.node_list = list()
+        self.node_list.append(local_node)
         self.master_node = local_node
 
     def append_node(self, node):
