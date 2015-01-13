@@ -4,23 +4,23 @@ what a cluster should have
 __author__ = 'wcong'
 from ants import log
 from ants import manager
-from ants.node import node
+from ants.node import nodeinfo
+from ants.crawl import crawl
+from ants.crawl import scheduler
 
 
 class ClusterManager(manager.Manager):
-    def __init__(self, setting, local_node, node_manager):
-        self.setting = setting
+    def __init__(self, node_manager):
+        self.setting = node_manager.setting
         self.node_manager = node_manager
-        self.cluster_info = ClusterInfo(setting, local_node)
+        self.cluster_info = ClusterInfo(self.setting, node_manager.node_info)
+        self.crawl_server = crawl.CrawlServer(self)
 
     def start(self):
         pass
 
     def stop(self):
         pass
-
-    def start_a_crawl(self, spider_name):
-        log.msg(spider_name)
 
     def find_node(self, addr, data):
         data = data.strip().split(':')
@@ -30,7 +30,7 @@ class ClusterManager(manager.Manager):
             return
         ip = addr[0]
         port = data[1]
-        node_info = node.NodeInfo(ip, port)
+        node_info = nodeinfo.NodeInfo(ip, port)
         if self.cluster_info.contain_node(node_info):
             log.msg("we already have the node,ip:" + ip + ';port:' + port)
             return
@@ -38,7 +38,27 @@ class ClusterManager(manager.Manager):
 
     def add_node(self, ip, port):
         log.msg("add ip:" + ip + ';port:' + port + ';node to cluster')
-        self.cluster_info.node_list.append(node.NodeInfo(ip, port))
+        self.cluster_info.node_list.append(nodeinfo.NodeInfo(ip, port))
+
+    def is_all_idle(self, spider_name):
+        self.crawl_server.idle_spider_dict[spider_name] = self.cluster_info.node_list
+        for node in self.cluster_info.node_list:
+            self.node_manager.is_idle(spider_name, node)
+
+    def idle_engine_manager(self, spider_name, node_info):
+        self.crawl_server.idle_spider_dict[spider_name].remove(node_info)
+        if len(self.crawl_server.idle_spider_dict[spider_name]) == 0:
+            self.crawl_server.running_spider_dict[spider_name].stop()
+
+    def init_all_node(self, spider_name):
+        self.crawl_server.init_spider_dict[spider_name] = self.cluster_info.node_list
+        for node in self.cluster_info.node_list:
+            self.node_manager.init_engine(spider_name, node)
+
+    def init_engine_manager(self, spider_name, node_info):
+        self.crawl_server.init_spider_dict[spider_name].remove(nodeinfo)
+        if len(self.crawl_server.init_spider_dict[spider_name]) == 0:
+            self.crawl_server.running_spider_dict[spider_name].run()
 
 
 class ClusterInfo():

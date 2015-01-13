@@ -3,18 +3,20 @@ __author__ = 'wcong'
 import unittest
 import time
 from ants.node import transport
-from ants.cluster import cluster
+from ants import settings
+from ants.node import node
 from twisted.internet import reactor
 import threading
 
 
 class TransportTest(unittest.TestCase):
     def test(self):
-        cluster = cluster.ClusterInfo(name='test_cluster')
+        setting = settings.Settings()
+        cluster = node.NodeManager(setting)
         transport_test = transport.TransportManager(cluster)
         ip = '127.0.0.1'
         transport_test.run_server()
-        transport_test.run_client(ip)
+        transport_test.run_client(ip, setting.get('TRANSPORT_PORT'))
         SendRequestThread(transport_test, ip).start()
         reactor.run()
 
@@ -25,9 +27,11 @@ class SendRequestThread(threading.Thread):
         self.transport_test = transport_test
         self.ip = ip
 
+
     def run(self):
         time.sleep(10)
-        self.transport_test.send_request(self.ip, 'hello world')
+        setting = settings.Settings()
+        self.transport_test.send_request(self.ip, setting.get('TRANSPORT_PORT'), 'hello world')
 
 
 if __name__ == '__main__':

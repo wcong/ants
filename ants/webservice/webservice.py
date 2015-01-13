@@ -13,8 +13,8 @@ import json
 
 
 class WebServiceManager(manager.Manager):
-    def __init__(self, setting, node_manager):
-        self.setting = setting
+    def __init__(self, node_manager):
+        self.setting = node_manager.setting
         self.port = self.setting.get('HTTP_PORT')
         self.node_manager = node_manager
         self.start_time = datetime.datetime.now()
@@ -62,7 +62,6 @@ class NodeService(Service):
 
 
 class SpiderListService(Service):
-
     def render_GET(self, request):
         return json.dumps(self.node_manager.crawl_manager.spider_list())
 
