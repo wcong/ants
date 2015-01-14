@@ -68,6 +68,7 @@ class Downloader(object):
         self.settings = engine.settings
         self.slots = {}
         self.active = set()
+        self.signals = engine.signals
         self.handlers = DownloadHandlers(engine)
         self.total_concurrency = self.settings.getint('CONCURRENT_REQUESTS')
         self.domain_concurrency = self.settings.getint('CONCURRENT_REQUESTS_PER_DOMAIN')

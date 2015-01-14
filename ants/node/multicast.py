@@ -117,7 +117,7 @@ class ReceiveThread(threading.Thread):
             data, addr = self.multicast.get_message()
             if data == self.multicast.message:
                 if self.multicast.receive_callback:
-                    self.multicast.receive_callback(data, addr)
+                    self.multicast.receive_callback(addr, data)
             time.sleep(self.sleep_time)
 
 

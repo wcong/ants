@@ -9,10 +9,8 @@ import logging
 
 '''
 what we do
-start the web service
-start the cluster
 start the node
-start the monitor
+let the node do what he need to do
 '''
 
 
@@ -31,6 +29,7 @@ class Bootstrap():
         setting = settings.Settings()
         node_manager = node.NodeManager(setting)
         node_manager.start()
+        log.start_from_settings(setting)
         reactor.run()
 
 

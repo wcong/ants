@@ -11,8 +11,8 @@ from ants.http import Request
 from ants.utils.httpobj import urlparse_cached
 from ants import log
 
-class OffsiteMiddleware(object):
 
+class OffsiteMiddleware(object):
     def __init__(self, stats):
         self.stats = stats
 
@@ -39,6 +39,8 @@ class OffsiteMiddleware(object):
                 yield x
 
     def should_follow(self, request, spider):
+        if not hasattr(self, 'host_regex'):
+            self.spider_opened(spider)
         regex = self.host_regex
         # hostname can be None for wrong urls (like javascript links)
         host = urlparse_cached(request).hostname or ''
@@ -48,7 +50,7 @@ class OffsiteMiddleware(object):
         """Override this method to implement a different offsite policy"""
         allowed_domains = getattr(spider, 'allowed_domains', None)
         if not allowed_domains:
-            return re.compile('') # allow all by default
+            return re.compile('')  # allow all by default
         regex = r'^(.*\.)?(%s)$' % '|'.join(re.escape(d) for d in allowed_domains if d is not None)
         return re.compile(regex)
 

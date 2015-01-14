@@ -1,24 +1,24 @@
 # encoding=utf8
 __author__ = 'wcong'
 import datetime
-import scheduler
 import scrapy
-from twisted.internet import reactor
+from ants.utils import log
+import logging
 import downloader
 from ants.extension import ExtensionManager
 from ants.signalmanager import SignalManager
 from ants.http import Response, Request
-from ants import log, signals
+from ants import signals
 from twisted.python.failure import Failure
 from ants.utils.misc import load_object
 
 
 class EngineServer():
-    def __init__(self, spider, cluster_manager):
+    def __init__(self, spider, cluster_manager, scheduler):
         self.spider = spider
+        self.scheduler = scheduler
         self.cluster_manager = cluster_manager
         self.status = EngineStatus()
-        self.scheduler = scheduler.SchedulerServer(cluster_manager.settings)
         self.distribute_index = 0
 
     def add_request(self, request):
@@ -71,9 +71,7 @@ class EngineClient():
     def crawl_request(self, request):
         d = self._download(request, self.spider)
         d.addBoth(self._handle_downloader_output, request, self.spider)
-        d.addErrback(log.msg, spider=self.spider)
-        d.addErrback(log.msg, spider=self.spider)
-        d.addErrback(log.msg, spider=self.spider)
+        d.addErrback(log.spider_log, spider=self.spider)
         return d
 
     def _handle_downloader_output(self, response, request, spider):
@@ -102,7 +100,7 @@ class EngineClient():
             if isinstance(response, Response):
                 response.request = request  # tie request to response received
                 logkws = self.logformatter.crawled(request, response, spider)
-                log.msg(spider=spider, **logkws)
+                logging.info(spider.name + ':' + 'crawled url:' + response.url)
                 self.signals.send_catch_log(signal=signals.response_received, \
                                             response=response, request=request, spider=spider)
             return response

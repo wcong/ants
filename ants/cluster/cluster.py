@@ -6,7 +6,6 @@ from ants import log
 from ants import manager
 from ants.node import nodeinfo
 from ants.crawl import crawl
-from ants.crawl import scheduler
 
 
 class ClusterManager(manager.Manager):
@@ -45,22 +44,22 @@ class ClusterManager(manager.Manager):
         self.cluster_info.node_list.append(nodeinfo.NodeInfo(ip, port))
 
     def is_all_idle(self, spider_name):
-        self.crawl_server.idle_spider_dict[spider_name] = self.cluster_info.node_list
+        self.crawl_server.init_idle_job_dict(spider_name, self.cluster_info.node_list)
         for node in self.cluster_info.node_list:
             self.node_manager.is_idle(spider_name, node)
 
-    def idle_engine_manager(self, spider_name, node_info):
-        self.crawl_server.idle_spider_dict[spider_name].remove(node_info)
+    def idle_engine_manager(self, spider_name, idle_node_info):
+        self.crawl_server.remove_idle_node(spider_name, idle_node_info)
         if len(self.crawl_server.idle_spider_dict[spider_name]) == 0:
             self.crawl_server.stop_engine(spider_name)
 
     def init_all_node(self, spider_name):
-        self.crawl_server.init_spider_dict[spider_name] = self.cluster_info.node_list
+        self.crawl_server.init_init_job_dict(spider_name, self.cluster_info.node_list)
         for node in self.cluster_info.node_list:
             self.node_manager.init_engine(spider_name, node)
 
     def init_engine_manager(self, spider_name, inited_node_info):
-        self.crawl_server.init_spider_dict[spider_name].remove(inited_node_info)
+        self.crawl_server.remove_init_node(spider_name, inited_node_info)
         if len(self.crawl_server.init_spider_dict[spider_name]) == 0:
             self.crawl_server.run_engine(spider_name)
 
