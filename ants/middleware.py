@@ -1,9 +1,10 @@
 from collections import defaultdict
 
-from ants import log
 from ants.exceptions import NotConfigured
 from ants.utils.misc import load_object
 from ants.utils.defer import process_parallel, process_chain, process_chain_both
+from ants.utils import log
+
 
 class MiddlewareManager(object):
     """Base class for implementing middleware managers"""
@@ -37,12 +38,11 @@ class MiddlewareManager(object):
             except NotConfigured as e:
                 if e.args:
                     clsname = clspath.split('.')[-1]
-                    log.msg(format="Disabled %(clsname)s: %(eargs)s",
-                            level=log.WARNING, clsname=clsname, eargs=e.args[0])
+                    log.spider_log("Disabled " + clsname + ":" + e.args[0],
+                                   level=log.WARNING)
 
         enabled = [x.__class__.__name__ for x in middlewares]
-        log.msg(format="Enabled %(componentname)ss: %(enabledlist)s", level=log.INFO,
-                componentname=cls.component_name, enabledlist=', '.join(enabled))
+        log.spider_log("Enabled " + cls.component_name + ":" + ', '.join(enabled), level=log.INFO)
         return cls(*middlewares)
 
     @classmethod
@@ -62,8 +62,10 @@ class MiddlewareManager(object):
         return process_chain(self.methods[methodname], obj, *args)
 
     def _process_chain_both(self, cb_methodname, eb_methodname, obj, *args):
-        return process_chain_both(self.methods[cb_methodname], \
-            self.methods[eb_methodname], obj, *args)
+        return process_chain_both(self.methods[cb_methodname],
+                                  self.methods[eb_methodname],
+                                  obj,
+                                  *args)
 
     def open_spider(self, spider):
         return self._process_parallel('open_spider', spider)

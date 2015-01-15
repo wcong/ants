@@ -4,7 +4,8 @@ HttpError Spider Middleware
 See documentation in docs/topics/spider-middleware.rst
 """
 from ants.exceptions import IgnoreRequest
-from ants import log
+from ants.utils import log
+
 
 class HttpError(IgnoreRequest):
     """A non-200 response was filtered"""
@@ -15,7 +16,6 @@ class HttpError(IgnoreRequest):
 
 
 class HttpErrorMiddleware(object):
-
     @classmethod
     def from_crawler(cls, crawler):
         return cls(crawler.settings)
@@ -42,10 +42,9 @@ class HttpErrorMiddleware(object):
 
     def process_spider_exception(self, response, exception, spider):
         if isinstance(exception, HttpError):
-            log.msg(
-                format="Ignoring response %(response)r: HTTP status code is not handled or not allowed",
+            log.spider_log(
+                "Ignoring response " + response.url + ": HTTP status code is not handled or not allowed",
                 level=log.DEBUG,
                 spider=spider,
-                response=response
             )
             return []

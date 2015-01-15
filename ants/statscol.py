@@ -3,10 +3,10 @@ Scrapy extension for collecting scraping stats
 """
 import pprint
 
-from ants import log
+from ants.utils import log
+
 
 class StatsCollector(object):
-
     def __init__(self, crawler):
         self._dump = crawler.settings.getbool('STATS_DUMP')
         self._stats = {}
@@ -41,15 +41,15 @@ class StatsCollector(object):
 
     def close_spider(self, spider, reason):
         if self._dump:
-            log.msg("Dumping Scrapy stats:\n" + pprint.pformat(self._stats), \
-                spider=spider)
+            log.spider_log("Dumping Scrapy stats:\n" + pprint.pformat(self._stats),
+                           spider=spider)
         self._persist_stats(self._stats, spider)
 
     def _persist_stats(self, stats, spider):
         pass
 
-class MemoryStatsCollector(StatsCollector):
 
+class MemoryStatsCollector(StatsCollector):
     def __init__(self, crawler):
         super(MemoryStatsCollector, self).__init__(crawler)
         self.spider_stats = {}
@@ -59,7 +59,6 @@ class MemoryStatsCollector(StatsCollector):
 
 
 class DummyStatsCollector(StatsCollector):
-
     def get_value(self, key, default=None, spider=None):
         return default
 

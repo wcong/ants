@@ -4,13 +4,12 @@ from twisted.internet.defer import Deferred, DeferredList
 from twisted.python.failure import Failure
 
 from ants.utils.defer import mustbe_deferred, defer_result
-from ants import log
+from ants.utils import log
 from ants.utils.request import request_fingerprint
 from ants.utils.misc import arg_to_iter
 
 
 class MediaPipeline(object):
-
     LOG_FAILED_RESULTS = True
 
     class SpiderInfo(object):
@@ -66,7 +65,7 @@ class MediaPipeline(object):
         dfd = mustbe_deferred(self.media_to_download, request, info)
         dfd.addCallback(self._check_media_to_download, request, info)
         dfd.addBoth(self._cache_result_and_execute_waiters, fp, info)
-        dfd.addErrback(log.err, spider=info.spider)
+        dfd.addErrback(log.spider_log, spider=info.spider)
         return dfd.addBoth(lambda _: wad)  # it must return wad at last
 
     def _check_media_to_download(self, result, request, info):
@@ -97,7 +96,7 @@ class MediaPipeline(object):
         for wad in info.waiting.pop(fp):
             defer_result(result).chainDeferred(wad)
 
-    ### Overridable Interface
+    # ## Overridable Interface
     def media_to_download(self, request, info):
         """Check request before starting download"""
         pass
@@ -120,5 +119,5 @@ class MediaPipeline(object):
             msg = '%s found errors proessing %s' % (self.__class__.__name__, item)
             for ok, value in results:
                 if not ok:
-                    log.err(value, msg, spider=info.spider)
+                    log.spider_log(value + msg, spider=info.spider, level=log.ERROR)
         return item

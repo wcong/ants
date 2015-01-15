@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import re
-from ants import log
+from ants.utils import log
 from ants.exceptions import NotConfigured
 from ants.http import HtmlResponse
 from ants.utils.response import _noscript_re, _script_re
 from w3lib import html
+
 
 class AjaxCrawlMiddleware(object):
     """
@@ -43,10 +44,9 @@ class AjaxCrawlMiddleware(object):
             return response
 
         # ants already handles #! links properly
-        ajax_crawl_request = request.replace(url=request.url+'#!')
-        log.msg(format="Downloading AJAX crawlable %(ajax_crawl_request)s instead of %(request)s",
-                level=log.DEBUG, spider=spider,
-                ajax_crawl_request=ajax_crawl_request, request=request)
+        ajax_crawl_request = request.replace(url=request.url + '#!')
+        log.spider_log("Downloading AJAX crawlable " + ajax_crawl_request + " instead of " + request.url,
+                       level=log.DEBUG, spider=spider)
 
         ajax_crawl_request.meta['ajax_crawlable'] = True
         return ajax_crawl_request
@@ -62,6 +62,8 @@ class AjaxCrawlMiddleware(object):
 
 # XXX: move it to w3lib?
 _ajax_crawlable_re = re.compile(ur'<meta\s+name=["\']fragment["\']\s+content=["\']!["\']/?>')
+
+
 def _has_ajaxcrawlable_meta(text):
     """
     >>> _has_ajaxcrawlable_meta('<html><head><meta name="fragment"  content="!"/></head><body></body></html>')

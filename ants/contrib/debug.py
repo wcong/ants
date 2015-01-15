@@ -12,7 +12,7 @@ from pdb import Pdb
 
 from ants.utils.engine import format_engine_status
 from ants.utils.trackref import format_live_refs
-from ants import log
+from ants.utils import log
 
 
 class StackTraceDump(object):
@@ -36,7 +36,7 @@ class StackTraceDump(object):
         liverefs = format_live_refs()
         msg = "Dumping stack trace and engine status" \
             "\n{0}\n{1}\n{2}".format(enginestatus, liverefs, stackdumps)
-        log.msg(msg)
+        log.spider_log(msg)
 
     def _thread_stacks(self):
         id2name = dict((th.ident, th.name) for th in threading.enumerate())

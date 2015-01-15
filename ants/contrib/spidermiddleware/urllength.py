@@ -4,12 +4,12 @@ Url Length Spider Middleware
 See documentation in docs/topics/spider-middleware.rst
 """
 
-from ants import log
+from ants.utils import log
 from ants.http import Request
 from ants.exceptions import NotConfigured
 
-class UrlLengthMiddleware(object):
 
+class UrlLengthMiddleware(object):
     def __init__(self, maxlength):
         self.maxlength = maxlength
 
@@ -23,9 +23,8 @@ class UrlLengthMiddleware(object):
     def process_spider_output(self, response, result, spider):
         def _filter(request):
             if isinstance(request, Request) and len(request.url) > self.maxlength:
-                log.msg(format="Ignoring link (url length > %(maxlength)d): %(url)s ",
-                        level=log.DEBUG, spider=spider,
-                        maxlength=self.maxlength, url=request.url)
+                log.spider_log("Ignoring link (url length > " + self.maxlength + "):" + request.url,
+                               level=log.DEBUG, spider=spider)
                 return False
             else:
                 return True

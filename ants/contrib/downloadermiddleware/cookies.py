@@ -4,7 +4,7 @@ from collections import defaultdict
 from ants.exceptions import NotConfigured
 from ants.http import Response
 from ants.http.cookies import CookieJar
-from ants import log
+from ants.utils import log
 
 
 class CookiesMiddleware(object):
@@ -53,7 +53,7 @@ class CookiesMiddleware(object):
             if cl:
                 msg = "Sending cookies to: %s" % request + os.linesep
                 msg += os.linesep.join("Cookie: %s" % c for c in cl)
-                log.msg(msg, spider=spider, level=log.DEBUG)
+                log.spider_log(msg, spider=spider, level=log.DEBUG)
 
     def _debug_set_cookie(self, response, spider):
         if self.debug:
@@ -61,7 +61,7 @@ class CookiesMiddleware(object):
             if cl:
                 msg = "Received cookies from: %s" % response + os.linesep
                 msg += os.linesep.join("Set-Cookie: %s" % c for c in cl)
-                log.msg(msg, spider=spider, level=log.DEBUG)
+                log.spider_log(msg, spider=spider, level=log.DEBUG)
 
     def _format_cookie(self, cookie):
         # build cookie string

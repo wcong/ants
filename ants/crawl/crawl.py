@@ -4,7 +4,6 @@ from ants import spidermanager
 import engine
 from ants.crawl import scheduler
 from twisted.internet import reactor
-from ants import log
 
 '''
 crawl server and client
@@ -113,7 +112,6 @@ class CrawlClient():
     def run(self):
         if self.status == self.STATUS_STOP:
             self.status = self.STATUS_RUNNING
-            log.start_from_settings(self.node_manager.settings)
             self.distribute()
 
     def __call__(self, *args, **kwargs):

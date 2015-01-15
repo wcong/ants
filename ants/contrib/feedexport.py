@@ -14,11 +14,12 @@ from zope.interface import Interface, implements
 from twisted.internet import defer, threads
 from w3lib.url import file_uri_to_path
 
-from ants import log, signals
+from ants import signals
 from ants.utils.ftp import ftp_makedirs_cwd
 from ants.exceptions import NotConfigured
 from ants.utils.misc import load_object
 from ants.utils.python import get_func_args
+from ants.utils import log
 
 
 class IFeedStorage(Interface):
@@ -36,7 +37,6 @@ class IFeedStorage(Interface):
 
 
 class BlockingFeedStorage(object):
-
     implements(IFeedStorage)
 
     def open(self, spider):
@@ -50,7 +50,6 @@ class BlockingFeedStorage(object):
 
 
 class StdoutFeedStorage(object):
-
     implements(IFeedStorage)
 
     def __init__(self, uri, _stdout=sys.stdout):
@@ -62,8 +61,8 @@ class StdoutFeedStorage(object):
     def store(self, file):
         pass
 
-class FileFeedStorage(object):
 
+class FileFeedStorage(object):
     implements(IFeedStorage)
 
     def __init__(self, uri):
@@ -78,10 +77,11 @@ class FileFeedStorage(object):
     def store(self, file):
         file.close()
 
-class S3FeedStorage(BlockingFeedStorage):
 
+class S3FeedStorage(BlockingFeedStorage):
     def __init__(self, uri):
         from ants.conf import settings
+
         try:
             import boto
         except ImportError:
@@ -103,7 +103,6 @@ class S3FeedStorage(BlockingFeedStorage):
 
 
 class FTPFeedStorage(BlockingFeedStorage):
-
     def __init__(self, uri):
         u = urlparse(uri)
         self.host = u.hostname
@@ -131,8 +130,8 @@ class SpiderSlot(object):
         self.uri = uri
         self.itemcount = 0
 
-class FeedExporter(object):
 
+class FeedExporter(object):
     def __init__(self, settings):
         self.settings = settings
         self.urifmt = settings['FEED_URI']
@@ -155,8 +154,9 @@ class FeedExporter(object):
             # FIXME: remove for ants 0.17
             import warnings
             from ants.exceptions import ScrapyDeprecationWarning
+
             warnings.warn("%s must receive a settings object as first constructor argument." % cls.__name__,
-                ScrapyDeprecationWarning, stacklevel=2)
+                          ScrapyDeprecationWarning, stacklevel=2)
             o = cls()
         else:
             o = cls(crawler.settings)
@@ -178,11 +178,10 @@ class FeedExporter(object):
         if not slot.itemcount and not self.store_empty:
             return
         slot.exporter.finish_exporting()
-        logfmt = "%%s %s feed (%d items) in: %s" % (self.format, \
-            slot.itemcount, slot.uri)
+        logfmt = "%%s %s feed (%d items) in: %s" % (self.format, slot.itemcount, slot.uri)
         d = defer.maybeDeferred(slot.storage.store, slot.file)
-        d.addCallback(lambda _: log.msg(logfmt % "Stored", spider=spider))
-        d.addErrback(log.err, logfmt % "Error storing", spider=spider)
+        d.addCallback(lambda _: log.spider_log(logfmt % "Stored", spider=spider))
+        d.addErrback(log.spider_log, logfmt % "Error storing", spider=spider)
         return d
 
     def item_scraped(self, item, spider):
@@ -205,7 +204,7 @@ class FeedExporter(object):
     def _exporter_supported(self, format):
         if format in self.exporters:
             return True
-        log.msg("Unknown feed format: %s" % format, log.ERROR)
+        log.spider_log("Unknown feed format: %s" % format, log.ERROR)
 
     def _storage_supported(self, uri):
         scheme = urlparse(uri).scheme
@@ -214,9 +213,9 @@ class FeedExporter(object):
                 self._get_storage(uri)
                 return True
             except NotConfigured:
-                log.msg("Disabled feed storage scheme: %s" % scheme, log.ERROR)
+                log.spider_log("Disabled feed storage scheme: %s" % scheme, log.ERROR)
         else:
-            log.msg("Unknown feed storage scheme: %s" % scheme, log.ERROR)
+            log.spider_log("Unknown feed storage scheme: %s" % scheme, log.ERROR)
 
     def _get_exporter(self, *a, **kw):
         return self.exporters[self.format](*a, **kw)

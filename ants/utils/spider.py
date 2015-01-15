@@ -1,12 +1,13 @@
 import inspect
 
-from ants import log
 from ants.item import BaseItem
-from ants.utils.misc import  arg_to_iter
+from ants.utils.misc import arg_to_iter
+from ants.utils import log
 
 
 def iterate_spider_output(result):
     return [result] if isinstance(result, BaseItem) else arg_to_iter(result)
+
 
 def iter_spider_classes(module):
     """Return an iterator over all spider classes defined in the given module
@@ -18,13 +19,14 @@ def iter_spider_classes(module):
 
     for obj in vars(module).itervalues():
         if inspect.isclass(obj) and \
-           issubclass(obj, Spider) and \
-           obj.__module__ == module.__name__ and \
-           getattr(obj, 'name', None):
+                issubclass(obj, Spider) and \
+                        obj.__module__ == module.__name__ and \
+                getattr(obj, 'name', None):
             yield obj
 
+
 def create_spider_for_request(spidermanager, request, default_spider=None, \
-        log_none=False, log_multiple=False, **spider_kwargs):
+                              log_none=False, log_multiple=False, **spider_kwargs):
     """Create a spider to handle the given Request.
 
     This will look for the spiders that can handle the given request (using
@@ -40,12 +42,12 @@ def create_spider_for_request(spidermanager, request, default_spider=None, \
         return spidermanager.create(snames[0], **spider_kwargs)
 
     if len(snames) > 1 and log_multiple:
-        log.msg(format='More than one spider can handle: %(request)s - %(snames)s',
-                level=log.ERROR, request=request, snames=', '.join(snames))
+        log.spider_log(format='More than one spider can handle:' + request.url + ':' + ', '.join(snames),
+                       level=log.ERROR)
 
     if len(snames) == 0 and log_none:
-        log.msg(format='Unable to find spider that handles: %(request)s',
-                level=log.ERROR, request=request)
+        log.spider_log(format='Unable to find spider that handles:' + request.url,
+                       level=log.ERROR)
 
     return default_spider
 

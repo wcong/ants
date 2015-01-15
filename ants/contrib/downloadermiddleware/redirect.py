@@ -1,13 +1,12 @@
 from urlparse import urljoin
 
-from ants import log
+from ants.utils import log
 from ants.http import HtmlResponse
 from ants.utils.response import get_meta_refresh
 from ants.exceptions import IgnoreRequest, NotConfigured
 
 
 class BaseRedirectMiddleware(object):
-
     enabled_setting = 'REDIRECT_ENABLED'
 
     def __init__(self, settings):
@@ -28,17 +27,15 @@ class BaseRedirectMiddleware(object):
         if ttl and redirects <= self.max_redirect_times:
             redirected.meta['redirect_times'] = redirects
             redirected.meta['redirect_ttl'] = ttl - 1
-            redirected.meta['redirect_urls'] = request.meta.get('redirect_urls', []) + \
-                [request.url]
+            redirected.meta['redirect_urls'] = request.meta.get('redirect_urls', []) + [request.url]
             redirected.dont_filter = request.dont_filter
             redirected.priority = request.priority + self.priority_adjust
-            log.msg(format="Redirecting (%(reason)s) to %(redirected)s from %(request)s",
-                    level=log.DEBUG, spider=spider, request=request,
-                    redirected=redirected, reason=reason)
+            log.spider_log("Redirecting " + reason + " to " + redirected + " from " + request.url,
+                           level=log.DEBUG, spider=spider)
             return redirected
         else:
-            log.msg(format="Discarding %(request)s: max redirections reached",
-                    level=log.DEBUG, spider=spider, request=request)
+            log.spider_log(format="Discarding " + request.url + ": max redirections reached",
+                           level=log.DEBUG, spider=spider)
             raise IgnoreRequest("max redirections reached")
 
     def _redirect_request_using_get(self, request, redirect_url):
@@ -77,7 +74,6 @@ class RedirectMiddleware(BaseRedirectMiddleware):
 
 
 class MetaRefreshMiddleware(BaseRedirectMiddleware):
-
     enabled_setting = 'METAREFRESH_ENABLED'
 
     def __init__(self, settings):

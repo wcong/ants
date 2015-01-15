@@ -4,11 +4,11 @@ Depth Spider Middleware
 See documentation in docs/topics/spider-middleware.rst
 """
 
-from ants import log
+from ants.utils import log
 from ants.http import Request
 
-class DepthMiddleware(object):
 
+class DepthMiddleware(object):
     def __init__(self, maxdepth, stats=None, verbose_stats=False, prio=1):
         self.maxdepth = maxdepth
         self.stats = stats
@@ -31,9 +31,8 @@ class DepthMiddleware(object):
                 if self.prio:
                     request.priority -= depth * self.prio
                 if self.maxdepth and depth > self.maxdepth:
-                    log.msg(format="Ignoring link (depth > %(maxdepth)d): %(requrl)s ",
-                            level=log.DEBUG, spider=spider,
-                            maxdepth=self.maxdepth, requrl=request.url)
+                    log.spider_log("Ignoring link (depth > %(" + str(self.maxdepth) + ")d):" + request.url,
+                                   level=log.DEBUG, spider=spider)
                     return False
                 elif self.stats:
                     if self.verbose_stats:

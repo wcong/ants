@@ -9,7 +9,7 @@ import re
 from ants import signals
 from ants.http import Request
 from ants.utils.httpobj import urlparse_cached
-from ants import log
+from ants.utils import log
 
 
 class OffsiteMiddleware(object):
@@ -31,8 +31,8 @@ class OffsiteMiddleware(object):
                     domain = urlparse_cached(x).hostname
                     if domain and domain not in self.domains_seen:
                         self.domains_seen.add(domain)
-                        log.msg(format="Filtered offsite request to %(domain)r: %(request)s",
-                                level=log.DEBUG, spider=spider, domain=domain, request=x)
+                        log.spider_log("Filtered offsite request to " + str(domain) + ":" + x.url,
+                                       level=log.DEBUG, spider=spider)
                         self.stats.inc_value('offsite/domains', spider=spider)
                     self.stats.inc_value('offsite/filtered', spider=spider)
             else:

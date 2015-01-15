@@ -10,13 +10,14 @@ from importlib import import_module
 
 from twisted.internet import task
 
-from ants import signals, log
+from ants import signals
 from ants.exceptions import NotConfigured
 from ants.mail import MailSender
 from ants.utils.engine import get_engine_status
+from ants.utils import log
+
 
 class MemoryUsage(object):
-
     def __init__(self, crawler):
         if not crawler.settings.getbool('MEMUSAGE_ENABLED'):
             raise NotConfigured
@@ -29,8 +30,8 @@ class MemoryUsage(object):
         self.crawler = crawler
         self.warned = False
         self.notify_mails = crawler.settings.getlist('MEMUSAGE_NOTIFY_MAIL')
-        self.limit = crawler.settings.getint('MEMUSAGE_LIMIT_MB')*1024*1024
-        self.warning = crawler.settings.getint('MEMUSAGE_WARNING_MB')*1024*1024
+        self.limit = crawler.settings.getint('MEMUSAGE_LIMIT_MB') * 1024 * 1024
+        self.warning = crawler.settings.getint('MEMUSAGE_WARNING_MB') * 1024 * 1024
         self.report = crawler.settings.getbool('MEMUSAGE_REPORT')
         self.mail = MailSender.from_settings(crawler.settings)
         crawler.signals.connect(self.engine_started, signal=signals.engine_started)
@@ -73,12 +74,12 @@ class MemoryUsage(object):
     def _check_limit(self):
         if self.get_virtual_size() > self.limit:
             self.crawler.stats.set_value('memusage/limit_reached', 1)
-            mem = self.limit/1024/1024
-            log.msg(format="Memory usage exceeded %(memusage)dM. Shutting down Scrapy...",
-                    level=log.ERROR, memusage=mem)
+            mem = self.limit / 1024 / 1024
+            log.spider_log("Memory usage exceeded %(memusage)dM. Shutting down Scrapy...",
+                           level=log.ERROR, memusage=mem)
             if self.notify_mails:
                 subj = "%s terminated: memory usage exceeded %dM at %s" % \
-                        (self.crawler.settings['BOT_NAME'], mem, socket.gethostname())
+                       (self.crawler.settings['BOT_NAME'], mem, socket.gethostname())
                 self._send_report(self.notify_mails, subj)
                 self.crawler.stats.set_value('memusage/limit_notified', 1)
 
@@ -90,16 +91,16 @@ class MemoryUsage(object):
                 self.crawler.stop()
 
     def _check_warning(self):
-        if self.warned: # warn only once
+        if self.warned:  # warn only once
             return
         if self.get_virtual_size() > self.warning:
             self.crawler.stats.set_value('memusage/warning_reached', 1)
-            mem = self.warning/1024/1024
-            log.msg(format="Memory usage reached %(memusage)dM",
-                    level=log.WARNING, memusage=mem)
+            mem = self.warning / 1024 / 1024
+            log.spider_log("Memory usage reached " + str(mem) + "M",
+                           level=log.WARNING)
             if self.notify_mails:
                 subj = "%s warning: memory usage reached %dM at %s" % \
-                        (self.crawler.settings['BOT_NAME'], mem, socket.gethostname())
+                       (self.crawler.settings['BOT_NAME'], mem, socket.gethostname())
                 self._send_report(self.notify_mails, subj)
                 self.crawler.stats.set_value('memusage/warning_notified', 1)
             self.warned = True
@@ -107,9 +108,9 @@ class MemoryUsage(object):
     def _send_report(self, rcpts, subject):
         """send notification mail with some additional useful info"""
         stats = self.crawler.stats
-        s = "Memory usage at engine startup : %dM\r\n" % (stats.get_value('memusage/startup')/1024/1024)
-        s += "Maximum memory usage           : %dM\r\n" % (stats.get_value('memusage/max')/1024/1024)
-        s += "Current memory usage           : %dM\r\n" % (self.get_virtual_size()/1024/1024)
+        s = "Memory usage at engine startup : %dM\r\n" % (stats.get_value('memusage/startup') / 1024 / 1024)
+        s += "Maximum memory usage           : %dM\r\n" % (stats.get_value('memusage/max') / 1024 / 1024)
+        s += "Current memory usage           : %dM\r\n" % (self.get_virtual_size() / 1024 / 1024)
 
         s += "ENGINE STATUS ------------------------------------------------------- \r\n"
         s += "\r\n"

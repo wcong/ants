@@ -13,7 +13,7 @@ from cStringIO import StringIO
 
 from twisted.internet import defer, threads
 
-from ants import log
+from ants.utils import log
 from ants.contrib.pipeline.media import MediaPipeline
 from ants.exceptions import NotConfigured, IgnoreRequest
 from ants.http import Request
@@ -25,7 +25,6 @@ class FileException(Exception):
 
 
 class FSFilesStore(object):
-
     def __init__(self, basedir):
         if '://' in basedir:
             basedir = basedir.split('://', 1)[1]
@@ -64,7 +63,6 @@ class FSFilesStore(object):
 
 
 class S3FilesStore(object):
-
     AWS_ACCESS_KEY_ID = None
     AWS_SECRET_ACCESS_KEY = None
 
@@ -185,9 +183,9 @@ class FilesPipeline(MediaPipeline):
                 return  # returning None force download
 
             referer = request.headers.get('Referer')
-            log.msg(format='File (uptodate): Downloaded %(medianame)s from %(request)s referred in <%(referer)s>',
-                    level=log.DEBUG, spider=info.spider,
-                    medianame=self.MEDIA_NAME, request=request, referer=referer)
+            log.spider_log(
+                'File (uptodate): Downloaded ' + self.MEDIA_NAME + ' from ' + request.url + ' referred in <' + referer + '>',
+                level=log.DEBUG, spider=info.spider)
             self.inc_stats(info.spider, 'uptodate')
 
             checksum = result.get('checksum', None)
@@ -196,17 +194,15 @@ class FilesPipeline(MediaPipeline):
         path = self.file_path(request, info=info)
         dfd = defer.maybeDeferred(self.store.stat_file, path, info)
         dfd.addCallbacks(_onsuccess, lambda _: None)
-        dfd.addErrback(log.err, self.__class__.__name__ + '.store.stat_file')
+        dfd.addErrback(log.spider_log, self.__class__.__name__ + '.store.stat_file')
         return dfd
 
     def media_failed(self, failure, request, info):
         if not isinstance(failure.value, IgnoreRequest):
             referer = request.headers.get('Referer')
-            log.msg(format='File (unknown-error): Error downloading '
-                           '%(medianame)s from %(request)s referred in '
-                           '<%(referer)s>: %(exception)s',
-                    level=log.WARNING, spider=info.spider, exception=failure.value,
-                    medianame=self.MEDIA_NAME, request=request, referer=referer)
+            log.spider_log('File (unknown-error): Error downloading '
+                           + self.MEDIA_NAME + ' from ' + request.url + ' referred in <' + referer + '>:' + failure.value,
+                           level=log.WARNING, spider=info.spider)
 
         raise FileException
 
@@ -214,34 +210,34 @@ class FilesPipeline(MediaPipeline):
         referer = request.headers.get('Referer')
 
         if response.status != 200:
-            log.msg(format='File (code: %(status)s): Error downloading file from %(request)s referred in <%(referer)s>',
-                    level=log.WARNING, spider=info.spider,
-                    status=response.status, request=request, referer=referer)
+            log.spider_log(
+                'File (code:' + response.status + '): Error downloading file from ' + request + ' referred in <' + referer + '>',
+                level=log.WARNING, spider=info.spider)
             raise FileException('download-error')
 
         if not response.body:
-            log.msg(format='File (empty-content): Empty file from %(request)s referred in <%(referer)s>: no-content',
-                    level=log.WARNING, spider=info.spider,
-                    request=request, referer=referer)
+            log.spider_log(
+                'File (empty-content): Empty file from ' + request.url + ' referred in <' + referer + '>: no-content',
+                level=log.WARNING, spider=info.spider)
             raise FileException('empty-content')
 
         status = 'cached' if 'cached' in response.flags else 'downloaded'
-        log.msg(format='File (%(status)s): Downloaded file from %(request)s referred in <%(referer)s>',
-                level=log.DEBUG, spider=info.spider,
-                status=status, request=request, referer=referer)
+        log.spider_log(
+            'File (' + status + '): Downloaded file from ' + request.url + ' referred in <' + referer + '>',
+            level=log.DEBUG, spider=info.spider)
         self.inc_stats(info.spider, status)
 
         try:
             path = self.file_path(request, response=response, info=info)
             checksum = self.file_downloaded(response, request, info)
         except FileException as exc:
-            whyfmt = 'File (error): Error processing file from %(request)s referred in <%(referer)s>: %(errormsg)s'
-            log.msg(format=whyfmt, level=log.WARNING, spider=info.spider,
-                    request=request, referer=referer, errormsg=str(exc))
+            msg = 'File (error): Error processing file from ' + request.url + ' referred in <' + referer + '>:' + str(
+                exc)
+            log.spider_log(msg, level=log.WARNING, spider=info.spider)
             raise
         except Exception as exc:
-            whyfmt = 'File (unknown-error): Error processing file from %(request)s referred in <%(referer)s>'
-            log.err(None, whyfmt % {'request': request, 'referer': referer}, spider=info.spider)
+            msg = 'File (unknown-error): Error processing file from %(request)s referred in <%(referer)s>'
+            log.spider_log(msg % {'request': request, 'referer': referer}, spider=info.spider)
             raise FileException(str(exc))
 
         return {'url': request.url, 'path': path, 'checksum': checksum}
@@ -250,7 +246,7 @@ class FilesPipeline(MediaPipeline):
         spider.crawler.stats.inc_value('file_count', spider=spider)
         spider.crawler.stats.inc_value('file_status_count/%s' % status, spider=spider)
 
-    ### Overridable Interface
+    # ## Overridable Interface
     def get_media_requests(self, item, info):
         return [Request(x) for x in item.get(self.FILES_URLS_FIELD, [])]
 
@@ -267,10 +263,11 @@ class FilesPipeline(MediaPipeline):
         return item
 
     def file_path(self, request, response=None, info=None):
-        ## start of deprecation warning block (can be removed in the future)
+        # # start of deprecation warning block (can be removed in the future)
         def _warn():
             from ants.exceptions import ScrapyDeprecationWarning
             import warnings
+
             warnings.warn('FilesPipeline.file_key(url) method is deprecated, please use '
                           'file_path(request, response=None, info=None) instead',
                           category=ScrapyDeprecationWarning, stacklevel=1)
@@ -286,7 +283,7 @@ class FilesPipeline(MediaPipeline):
         if not hasattr(self.file_key, '_base'):
             _warn()
             return self.file_key(url)
-        ## end of deprecation warning block
+        # # end of deprecation warning block
 
         media_guid = hashlib.sha1(url).hexdigest()  # change to request.url after deprecation
         media_ext = os.path.splitext(url)[1]  # change to request.url after deprecation
@@ -295,4 +292,5 @@ class FilesPipeline(MediaPipeline):
     # deprecated
     def file_key(self, url):
         return self.file_path(url)
+
     file_key._base = True

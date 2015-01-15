@@ -1,6 +1,6 @@
+#!/usr/bin/env python
 # encoding=utf8
 __author__ = 'wcong'
-from ants import log
 import sys
 from twisted.internet import reactor
 from ants.node import node
@@ -13,23 +13,24 @@ start the node
 let the node do what he need to do
 '''
 
+logging.basicConfig(format="[%(asctime)s %(name)s %(module)s %(lineno)d]%(levelname)s:%(message)s",
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO)
+
 
 class Bootstrap():
     def __init__(self, *args, **kwargs):
-        log.msg("do not panic,it is shipping")
+        logging.info("do not panic,it is shipping")
 
     '''
     we init almost everything in node manager
     '''
 
     def start(self):
-        logging.basicConfig(format="[%(asctime)s %(name)s %(module)s %(lineno)d]%(levelname)s:%(message)s",
-                            datefmt='%Y-%m-%d %H:%M:%S',
-                            level=logging.INFO)
         setting = settings.Settings()
+        logging.info("test")
         node_manager = node.NodeManager(setting)
         node_manager.start()
-        log.start_from_settings(setting)
         reactor.run()
 
 

@@ -1,13 +1,12 @@
 from __future__ import print_function
 import os
 
-from ants import log
 from ants.utils.job import job_dir
 from ants.utils.request import request_fingerprint
+from ants.utils import log
 
 
 class BaseDupeFilter(object):
-
     @classmethod
     def from_settings(cls, settings):
         return cls()
@@ -59,13 +58,12 @@ class RFPDupeFilter(BaseDupeFilter):
 
     def log(self, request, spider):
         if self.debug:
-            fmt = "Filtered duplicate request: %(request)s"
-            log.msg(format=fmt, request=request, level=log.DEBUG, spider=spider)
+            log.spider_log("Filtered duplicate request:" + request.url, level=log.DEBUG, spider=spider)
         elif self.logdupes:
-            fmt = ("Filtered duplicate request: %(request)s"
+            fmt = ("Filtered duplicate request: " + request.url +
                    " - no more duplicates will be shown"
                    " (see DUPEFILTER_DEBUG to show all duplicates)")
-            log.msg(format=fmt, request=request, level=log.DEBUG, spider=spider)
+            log.spider_log(fmt, level=log.DEBUG, spider=spider)
             self.logdupes = False
 
         spider.crawler.stats.inc_value('dupefilter/filtered', spider=spider)

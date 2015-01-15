@@ -2,8 +2,8 @@
 what a cluster should have
 '''
 __author__ = 'wcong'
-from ants import log
 from ants import manager
+import logging
 from ants.node import nodeinfo
 from ants.crawl import crawl
 
@@ -25,13 +25,13 @@ class ClusterManager(manager.Manager):
         data = data.strip().split(':')
         name = data[0]
         if name != self.cluster_info.name:
-            log.msg("name not the same,mine:" + self.cluster_info.name + ';accept:' + name + ';ignore')
+            logging.info("name not the same,mine:" + self.cluster_info.name + ';accept:' + name + ';ignore')
             return
         ip = addr[0]
         port = data[1]
         node_info = nodeinfo.NodeInfo(ip, port)
         if self.cluster_info.contain_node(node_info):
-            log.msg("we already have the node,ip:" + ip + ';port:' + port)
+            logging.info("we already have the node,ip:" + ip + ';port:' + port)
             return
         self.node_manager.transport_manager.run_client(ip, port)
 
@@ -40,7 +40,7 @@ class ClusterManager(manager.Manager):
         self.crawl_server.accept_request(request.spider_name, request)
 
     def add_node(self, ip, port):
-        log.msg("add ip:" + ip + ';port:' + port + ';node to cluster')
+        logging.info("add ip:" + ip + ';port:' + port + ';node to cluster')
         self.cluster_info.node_list.append(nodeinfo.NodeInfo(ip, port))
 
     def is_all_idle(self, spider_name):

@@ -1,7 +1,8 @@
 from twisted.internet import task
 
 from ants.exceptions import NotConfigured
-from ants import log, signals
+from ants import  signals
+from ants.utils import log
 
 
 class LogStats(object):
@@ -37,7 +38,7 @@ class LogStats(object):
         self.pagesprev, self.itemsprev = pages, items
         msg = "Crawled %d pages (at %d pages/min), scraped %d items (at %d items/min)" \
             % (pages, prate, items, irate)
-        log.msg(msg, spider=spider)
+        log.spider_log(msg, spider=spider)
 
     def spider_closed(self, spider, reason):
         if self.task.running:

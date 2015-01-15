@@ -82,7 +82,7 @@ class EngineClient():
             return
         # response is a Response or Failure
         d = self.scraper.enqueue_scrape(response, request, spider)
-        d.addErrback(log.err, spider=spider)
+        d.addErrback(log.spider_log, spider=spider)
         return d
 
     def download(self, request, spider):
@@ -99,9 +99,8 @@ class EngineClient():
             assert isinstance(response, (Response, Request))
             if isinstance(response, Response):
                 response.request = request  # tie request to response received
-                logkws = self.logformatter.crawled(request, response, spider)
                 logging.info(spider.name + ':' + 'crawled url:' + response.url)
-                self.signals.send_catch_log(signal=signals.response_received, \
+                self.signals.send_catch_log(signal=signals.response_received,
                                             response=response, request=request, spider=spider)
             return response
 
@@ -118,6 +117,3 @@ class EngineStatus():
     def __init__(self):
         self.status = self.STATUS_INIT
         self.start_time = datetime.datetime.now()
-
-
-

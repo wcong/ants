@@ -9,7 +9,7 @@ import tarfile
 from cStringIO import StringIO
 from tempfile import mktemp
 
-from ants import log
+from ants.utils import log
 from ants.responsetypes import responsetypes
 
 
@@ -74,7 +74,7 @@ class DecompressionMiddleware(object):
         for fmt, func in self._formats.iteritems():
             new_response = func(response)
             if new_response:
-                log.msg(format='Decompressed response with format: %(responsefmt)s',
-                        level=log.DEBUG, spider=spider, responsefmt=fmt)
+                log.spider_log('Decompressed response with format:' + fmt,
+                               level=log.DEBUG, spider=spider, )
                 return new_response
         return response

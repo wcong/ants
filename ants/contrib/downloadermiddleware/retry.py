@@ -20,17 +20,16 @@ About HTTP errors to consider:
 
 from twisted.internet import defer
 from twisted.internet.error import TimeoutError, DNSLookupError, \
-        ConnectionRefusedError, ConnectionDone, ConnectError, \
-        ConnectionLost, TCPTimedOutError
+    ConnectionRefusedError, ConnectionDone, ConnectError, \
+    ConnectionLost, TCPTimedOutError
 
-from ants import log
+from ants.utils import log
 from ants.exceptions import NotConfigured
 from ants.utils.response import response_status_message
 from ants.xlib.tx import ResponseFailed
 
 
 class RetryMiddleware(object):
-
     # IOError is raised by the HttpCompression middleware when trying to
     # decompress an empty response
     EXCEPTIONS_TO_RETRY = (defer.TimeoutError, TimeoutError, DNSLookupError,
@@ -66,13 +65,13 @@ class RetryMiddleware(object):
         retries = request.meta.get('retry_times', 0) + 1
 
         if retries <= self.max_retry_times:
-            log.msg(format="Retrying %(request)s (failed %(retries)d times): %(reason)s",
-                    level=log.DEBUG, spider=spider, request=request, retries=retries, reason=reason)
+            log.spider_log("Retrying " + request.url + " (failed " + str(retries) + " times):" + reason,
+                           level=log.DEBUG, spider=spider)
             retryreq = request.copy()
             retryreq.meta['retry_times'] = retries
             retryreq.dont_filter = True
             retryreq.priority = request.priority + self.priority_adjust
             return retryreq
         else:
-            log.msg(format="Gave up retrying %(request)s (failed %(retries)d times): %(reason)s",
-                    level=log.DEBUG, spider=spider, request=request, retries=retries, reason=reason)
+            log.spider_log("Gave up retrying " + request.url + " (failed " + str(retries) + " times):" + reason,
+                           level=log.DEBUG, spider=spider)

@@ -9,7 +9,7 @@ from ants.crawl import crawl
 import nodeinfo
 import rpc
 from ants.utils import jsonextends
-from ants import log
+import logging
 
 
 '''
@@ -50,7 +50,7 @@ class NodeManager(manager.Manager):
         and ready to start
         :return:
         '''
-        log.msg('start to init manager')
+        logging.info('start to init manager')
         for inner_manager in self.manager_list:
             inner_manager.start()
 

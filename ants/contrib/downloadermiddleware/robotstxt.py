@@ -6,7 +6,7 @@ enable this middleware and enable the ROBOTSTXT_OBEY setting.
 
 import robotparser
 
-from ants import signals, log
+from ants.utils import log
 from ants.exceptions import NotConfigured, IgnoreRequest
 from ants.http import Request
 from ants.utils.httpobj import urlparse_cached
@@ -32,8 +32,8 @@ class RobotsTxtMiddleware(object):
         useragent = self._useragent
         rp = self.robot_parser(request, spider)
         if rp and not rp.can_fetch(useragent, request.url):
-            log.msg(format="Forbidden by robots.txt: %(request)s",
-                    level=log.DEBUG, request=request)
+            log.spider_log("Forbidden by robots.txt:" + request.url,
+                           level=log.DEBUG)
             raise IgnoreRequest
 
     def robot_parser(self, request, spider):

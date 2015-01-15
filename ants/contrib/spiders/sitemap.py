@@ -4,10 +4,10 @@ from ants.spider import Spider
 from ants.http import Request, XmlResponse
 from ants.utils.sitemap import Sitemap, sitemap_urls_from_robots
 from ants.utils.gz import gunzip, is_gzipped
-from ants import log
+from ants.utils import log
+
 
 class SitemapSpider(Spider):
-
     sitemap_urls = ()
     sitemap_rules = [('', 'parse')]
     sitemap_follow = ['']
@@ -32,8 +32,8 @@ class SitemapSpider(Spider):
         else:
             body = self._get_sitemap_body(response)
             if body is None:
-                log.msg(format="Ignoring invalid sitemap: %(response)s",
-                        level=log.WARNING, spider=self, response=response)
+                log.spider_log("Ignoring invalid sitemap:" + response.url,
+                               level=log.WARNING, spider=self)
                 return
 
             s = Sitemap(body)
@@ -61,10 +61,12 @@ class SitemapSpider(Spider):
         elif response.url.endswith('.xml.gz'):
             return gunzip(response.body)
 
+
 def regex(x):
     if isinstance(x, basestring):
         return re.compile(x)
     return x
+
 
 def iterloc(it, alt=False):
     for d in it:

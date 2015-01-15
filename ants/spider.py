@@ -3,7 +3,7 @@ Base class for Scrapy spiders
 
 See documentation in docs/topics/spiders.rst
 """
-from ants import log
+from ants.utils import log
 from ants.http import Request
 from ants.utils.trackref import object_ref
 from ants.utils.url import url_is_from_spider
@@ -30,7 +30,7 @@ class Spider(object_ref):
         """Log the given messages at the given log level. Always use this
         method to send log messages from your spider
         """
-        log.msg(message, spider=self, level=level, **kw)
+        log.spider_log(message, spider=self, level=level, **kw)
 
     def set_crawler(self, crawler):
         assert not hasattr(self, '_crawler'), "Spider already bounded to %s" % crawler
@@ -74,6 +74,7 @@ class ObsoleteClass(object):
 
     def __getattr__(self, name):
         raise AttributeError(self.message)
+
 
 spiders = ObsoleteClass("""
 "from ants.spider import spiders" no longer works - use "from ants.project import crawler" and then access crawler.spiders attribute"
