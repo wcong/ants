@@ -17,12 +17,11 @@ from ants.xlib.tx import Agent, ProxyAgent, ResponseDone, \
 
 from ants.http import Headers
 from ants.responsetypes import responsetypes
-from ants.core.downloader.webclient import _parse
+from ants.crawl.downloader.webclient import _parse
 from ants.utils.misc import load_object
 
 
 class HTTP11DownloadHandler(object):
-
     def __init__(self, settings):
         self._pool = HTTPConnectionPool(reactor, persistent=True)
         self._pool.maxPersistentPerHost = settings.getint('CONCURRENT_REQUESTS_PER_DOMAIN')
@@ -58,7 +57,7 @@ class TunnelingTCP4ClientEndpoint(TCP4ClientEndpoint):
                  timeout=30, bindAddress=None):
         proxyHost, proxyPort, self._proxyAuthHeader = proxyConf
         super(TunnelingTCP4ClientEndpoint, self).__init__(reactor, proxyHost,
-            proxyPort, timeout, bindAddress)
+                                                          proxyPort, timeout, bindAddress)
         self._tunnelReadyDeferred = defer.Deferred()
         self._tunneledHost = host
         self._tunneledPort = port
@@ -67,7 +66,7 @@ class TunnelingTCP4ClientEndpoint(TCP4ClientEndpoint):
     def requestTunnel(self, protocol):
         """Asks the proxy to open a tunnel."""
         tunnelReq = 'CONNECT %s:%s HTTP/1.1\r\n' % (self._tunneledHost,
-                                                  self._tunneledPort)
+                                                    self._tunneledPort)
         if self._proxyAuthHeader:
             tunnelReq += 'Proxy-Authorization: %s\r\n' % self._proxyAuthHeader
         tunnelReq += '\r\n'
@@ -83,7 +82,7 @@ class TunnelingTCP4ClientEndpoint(TCP4ClientEndpoint):
         raises a TunnelError.
         """
         self._protocol.dataReceived = self._protocolDataReceived
-        if  TunnelingTCP4ClientEndpoint._responseMatcher.match(bytes):
+        if TunnelingTCP4ClientEndpoint._responseMatcher.match(bytes):
             self._protocol.transport.startTLS(self._contextFactory,
                                               self._protocolFactory)
             self._tunnelReadyDeferred.callback(self._protocol)
@@ -115,18 +114,17 @@ class TunnelingAgent(Agent):
     def __init__(self, reactor, proxyConf, contextFactory=None,
                  connectTimeout=None, bindAddress=None, pool=None):
         super(TunnelingAgent, self).__init__(reactor, contextFactory,
-            connectTimeout, bindAddress, pool)
+                                             connectTimeout, bindAddress, pool)
         self._proxyConf = proxyConf
         self._contextFactory = contextFactory
 
     def _getEndpoint(self, scheme, host, port):
         return TunnelingTCP4ClientEndpoint(self._reactor, host, port,
-            self._proxyConf, self._contextFactory, self._connectTimeout,
-            self._bindAddress)
+                                           self._proxyConf, self._contextFactory, self._connectTimeout,
+                                           self._bindAddress)
 
 
 class ScrapyAgent(object):
-
     _Agent = Agent
     _ProxyAgent = ProxyAgent
     _TunnelingAgent = TunnelingAgent
@@ -144,19 +142,19 @@ class ScrapyAgent(object):
             _, _, proxyHost, proxyPort, proxyParams = _parse(proxy)
             scheme = _parse(request.url)[0]
             omitConnectTunnel = proxyParams.find('noconnect') >= 0
-            if  scheme == 'https' and not omitConnectTunnel:
+            if scheme == 'https' and not omitConnectTunnel:
                 proxyConf = (proxyHost, proxyPort,
                              request.headers.get('Proxy-Authorization', None))
                 return self._TunnelingAgent(reactor, proxyConf,
-                    contextFactory=self._contextFactory, connectTimeout=timeout,
-                    bindAddress=bindaddress, pool=self._pool)
+                                            contextFactory=self._contextFactory, connectTimeout=timeout,
+                                            bindAddress=bindaddress, pool=self._pool)
             else:
                 endpoint = TCP4ClientEndpoint(reactor, proxyHost, proxyPort,
-                    timeout=timeout, bindAddress=bindaddress)
+                                              timeout=timeout, bindAddress=bindaddress)
                 return self._ProxyAgent(endpoint)
 
         return self._Agent(reactor, contextFactory=self._contextFactory,
-            connectTimeout=timeout, bindAddress=bindaddress, pool=self._pool)
+                           connectTimeout=timeout, bindAddress=bindaddress, pool=self._pool)
 
     def download_request(self, request):
         timeout = request.meta.get('download_timeout') or self._connectTimeout
@@ -231,7 +229,6 @@ class _RequestBodyProducer(object):
 
 
 class _ResponseReader(protocol.Protocol):
-
     def __init__(self, finished, txresponse, request):
         self._finished = finished
         self._txresponse = txresponse

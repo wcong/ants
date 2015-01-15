@@ -24,18 +24,10 @@ class Crawler(object):
         self.spiders = spman_cls.from_crawler(self)
 
     def install(self):
-        # TODO: remove together with ants.project.crawler usage
-        import ants.project
-
-        assert not hasattr(ants.project, 'crawler'), "crawler already installed"
-        ants.project.crawler = self
+        pass
 
     def uninstall(self):
-        # TODO: remove together with ants.project.crawler usage
-        import ants.project
-
-        assert hasattr(ants.project, 'crawler'), "crawler not installed"
-        del ants.project.crawler
+        pass
 
     def configure(self):
         if self.configured:

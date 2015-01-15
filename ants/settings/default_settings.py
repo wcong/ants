@@ -57,19 +57,19 @@ DOWNLOAD_DELAY = 0
 
 DOWNLOAD_HANDLERS = {}
 DOWNLOAD_HANDLERS_BASE = {
-    'file': 'ants.core.downloader.handlers.file.FileDownloadHandler',
-    'http': 'ants.core.downloader.handlers.http.HTTPDownloadHandler',
-    'https': 'ants.core.downloader.handlers.http.HTTPDownloadHandler',
-    's3': 'ants.core.downloader.handlers.s3.S3DownloadHandler',
-    'ftp': 'ants.core.downloader.handlers.ftp.FTPDownloadHandler',
+    'file': 'ants.crawl.downloader.handlers.file.FileDownloadHandler',
+    'http': 'ants.crawl.downloader.handlers.http.HTTPDownloadHandler',
+    'https': 'ants.crawl.downloader.handlers.http.HTTPDownloadHandler',
+    's3': 'ants.crawl.downloader.handlers.s3.S3DownloadHandler',
+    'ftp': 'ants.crawl.downloader.handlers.ftp.FTPDownloadHandler',
 }
 
 DOWNLOAD_TIMEOUT = 180  # 3mins
 
-DOWNLOADER = 'ants.core.downloader.Downloader'
+DOWNLOADER = 'ants.crawl.downloader.Downloader'
 
-DOWNLOADER_HTTPCLIENTFACTORY = 'ants.core.downloader.webclient.ScrapyHTTPClientFactory'
-DOWNLOADER_CLIENTCONTEXTFACTORY = 'ants.core.downloader.contextfactory.ScrapyClientContextFactory'
+DOWNLOADER_HTTPCLIENTFACTORY = 'ants.crawl.downloader.webclient.ScrapyHTTPClientFactory'
+DOWNLOADER_CLIENTCONTEXTFACTORY = 'ants.crawl.downloader.contextfactory.ScrapyClientContextFactory'
 
 DOWNLOADER_MIDDLEWARES = {}
 
@@ -109,8 +109,6 @@ EXTENSIONS = {}
 
 EXTENSIONS_BASE = {
     'ants.contrib.corestats.CoreStats': 0,
-    # 'ants.webservice.WebService': 0,
-    # 'ants.telnet.TelnetConsole': 0,
     'ants.contrib.memusage.MemoryUsage': 0,
     'ants.contrib.memdebug.MemoryDebugger': 0,
     'ants.contrib.closespider.CloseSpider': 0,
@@ -197,7 +195,7 @@ RETRY_PRIORITY_ADJUST = -1
 
 ROBOTSTXT_OBEY = False
 
-SCHEDULER = 'ants.core.scheduler.Scheduler'
+SCHEDULER = 'ants.crawl.scheduler.Scheduler'
 SCHEDULER_DISK_QUEUE = 'ants.squeue.PickleLifoDiskQueue'
 SCHEDULER_MEMORY_QUEUE = 'ants.squeue.LifoMemoryQueue'
 
