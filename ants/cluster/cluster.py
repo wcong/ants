@@ -16,7 +16,15 @@ class ClusterManager(manager.Manager):
         self.crawl_server = crawl.CrawlServer(self)
 
     def start(self):
-        pass
+        node_list = self.settings.get('NODE_LIST')
+        if node_list:
+            i = 0
+            while i < len(node_list):
+                ip = node_list[i]
+                if ip == '127.0.0.1':
+                    ip = self.node_manager.node_info.ip
+                self.node_manager.connect_to_node(ip, node_list[i + 1])
+                i += 2
 
     def stop(self):
         pass
@@ -29,19 +37,18 @@ class ClusterManager(manager.Manager):
             return
         ip = addr[0]
         port = data[1]
-        node_info = nodeinfo.NodeInfo(ip, port)
-        if self.cluster_info.contain_node(node_info):
-            logging.info("we already have the node,ip:" + ip + ';port:' + port)
-            return
-        self.node_manager.transport_manager.run_client(ip, port)
-
+        self.node_manager.connect_to_node(ip, port)
 
     def add_request(self, request):
         self.crawl_server.accept_request(request.spider_name, request)
 
     def add_node(self, ip, port):
-        logging.info("add ip:" + ip + ';port:' + port + ';node to cluster')
-        self.cluster_info.node_list.append(nodeinfo.NodeInfo(ip, port))
+        node_info = nodeinfo.NodeInfo(ip, port)
+        if self.cluster_info.contain_node(node_info):
+            logging.info("we already have the node,ip:" + ip + ';port:' + str(port))
+            return
+        logging.info("add ip:" + ip + ';port:' + str(port) + ';node to cluster')
+        self.cluster_info.append_node(nodeinfo.NodeInfo(ip, port))
 
     def is_all_idle(self, spider_name):
         self.crawl_server.init_idle_job_dict(spider_name, self.cluster_info.node_list)

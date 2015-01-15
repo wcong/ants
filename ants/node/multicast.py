@@ -49,6 +49,9 @@ class MulticastManager(manager.Manager):
 
     def __init__(self, node_manager, receive_callback=None):
         self.settings = node_manager.settings
+        self.is_multicast = self.settings.get('MULTICAST_ENABLED')
+        if not self.is_multicast:
+            return
         self.node_manager = node_manager
         self.message = self.settings.get('CLUSTER_NAME') + ':' + str(self.settings.get('TRANSPORT_PORT'))
         self.cast_sock = make_cast_socket(self.ip, self.port)
@@ -62,16 +65,16 @@ class MulticastManager(manager.Manager):
         self.stop_cast()
 
     def start(self):
-        self.find_node()
+        if self.is_multicast:
+            self.find_node()
 
     def cast(self):
+        logging.info("going to send request,hopping to find node")
         multicast_thread = MulticastThread(self)
         multicast_thread.start()
 
     def stop_cast(self):
         self.multicast_status.stop()
-        # let it exit by self
-        time.sleep(MulticastThread.sleep_time)
 
     def send_message(self):
         self.cast_sock.sendto(self.message, (self.ip, self.port))
@@ -107,17 +110,18 @@ class MulticastStatus:
 class ReceiveThread(threading.Thread):
     sleep_time = 1
 
-    def __init__(self, multicast):
+    def __init__(self, multicast_manager):
         super(ReceiveThread, self).__init__()
-        self.multicast = multicast
+        self.multicast_manager = multicast_manager
 
     def run(self):
-        self.multicast.multicast_status.run()
-        while self.multicast.multicast_status.is_run():
-            data, addr = self.multicast.get_message()
-            if data == self.multicast.message:
-                if self.multicast.receive_callback:
-                    self.multicast.receive_callback(addr, data)
+        self.multicast_manager.multicast_status.run()
+        self.multicast_manager.cast()
+        while self.multicast_manager.multicast_status.is_run():
+            data, addr = self.multicast_manager.get_message()
+            if data == self.multicast_manager.message:
+                if self.multicast_manager.receive_callback:
+                    self.multicast_manager.receive_callback(addr, data)
             time.sleep(self.sleep_time)
 
 

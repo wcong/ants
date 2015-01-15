@@ -4,6 +4,7 @@ __author__ = 'wcong'
 from twisted.internet import reactor, protocol
 from ants import manager
 import logging
+import pickle
 import rpc
 
 '''
@@ -30,8 +31,8 @@ class TransportManager(manager.Manager):
         self.port = self.settings.get('TRANSPORT_PORT')
         self.node_manager = node_manager
         self.client_factory = TransportClientFactory(self)
-        self.server_factory = protocol.ServerFactory()
-        self.server_factory.protocol = TransportServer(self)
+        self.server_factory = TransportServerFactory(self)
+        self.client_dict = dict()
 
     def start(self):
         self.run_server()
@@ -40,10 +41,14 @@ class TransportManager(manager.Manager):
         pass
 
     def run_client(self, ip, port):
+        client_key = make_client_key(ip, port)
+        if client_key in self.client_dict:
+            return
         reactor.connectTCP(ip, port, self.client_factory)
 
     def send_request(self, ip, port, message):
-        self.client_factory.client_dict[ip + ':' + port].send_message(message)
+        client_key = make_client_key(ip, port)
+        self.client_dict[client_key].send_message(message)
 
     def manager_data(self, data, addr):
         print 'get data from :' + addr.host + ':' + data
@@ -53,81 +58,125 @@ class TransportManager(manager.Manager):
         reactor.listenTCP(self.port, self.server_factory)
 
     def connect_made(self, ip, port):
-        self.node_manager.cluster_manager.add_node(ip, port)
+        self.node_manager.add_node_to_cluster(ip, port)
+
+    def add_client_dict(self, ip, port, client):
+        self.client_dict[make_client_key(ip, port)] = client
+
+
+def make_client_key(ip, port):
+    return ip + ':' + str(port)
+
+
+def request_add_me(tcp, msg):
+    ip = tcp.transport.getPeer().host
+    port = int(msg)
+    tcp.transport_manager.run_client(ip, port)
+
+
+def request_init_engine(tcp, msg):
+    tcp.transport_manager.node_manager.init_engine(msg)
+    return_msg = rpc.RESPONSE_INIT_REQUEST + str(tcp.transport_manager.port) + ':' + msg + ':' + 'ok'
+    tcp.transport.write(return_msg)
+
+
+def response_init_engine(tcp, msg):
+    data = msg.split(':')
+    if data[2] == 'ok':
+        ip = tcp.transport.getPeer().host
+        tcp.transport_manager.node_manager.init_engine_manager(data[1], ip, int(data[0]))
+
+
+def request_is_spider_idle(tcp, msg):
+    result = tcp.transport_manager.node_manager.is_idle(msg)
+    tcp.transport.write(
+        rpc.RESPONSE_SPIDER_IDLE_STATUS + str(tcp.transport_manager.port) + ':' + msg + ':' + result)
+
+
+def response_spider_idle_status(tcp, msg):
+    msg = msg.split(':')
+    port = int(msg[0])
+    spider_name = msg[1]
+    is_idle = True if msg[2] == 'true' else False
+    if is_idle:
+        ip = tcp.transport.getPeer().host
+        tcp.transport_manager.node_manager.idle_engine_manager(spider_name, ip, port)
+
+
+def request_start_a_engine(tcp, msg):
+    tcp.transport_manager.node_manager.start_a_engine(msg)
+
+
+def request_send_request(tcp, msg):
+    tcp.transport_manager.node_manager.send_request_to_client(pickle.loads(msg))
+
+
+def response_send_request(tcp, msg):
+    tcp.transport_manager.node_manager.send_request_to_master(pickle.loads(msg))
+
+
+response_dict = dict()
+response_dict[rpc.REQUEST_INIT_ENGINE] = request_init_engine
+response_dict[rpc.RESPONSE_INIT_REQUEST] = response_init_engine
+response_dict[rpc.REQUEST_IS_SPIDER_IDLE] = request_is_spider_idle
+response_dict[rpc.RESPONSE_SPIDER_IDLE_STATUS] = response_spider_idle_status
+response_dict[rpc.REQUEST_START_A_ENGINE] = request_start_a_engine
+response_dict[rpc.REQUEST_ADD_ME] = request_add_me
+response_dict[rpc.REQUEST_SEND_REQUEST] = request_send_request
+response_dict[rpc.RESPONSE_SEND_REQUEST] = response_send_request
+
+
+class TransportServerFactory(protocol.Factory):
+    def __init__(self, transport_manager):
+        self.transport_manager = transport_manager
+
+    def buildProtocol(self, addr):
+        return TransportServer(self.transport_manager)
 
 
 class TransportServer(protocol.Protocol):
-    def __init__(self, factory):
-        self.factory = factory
-        self.response_dict = dict()
-        self.response_dict[rpc.REQUEST_INIT_ENGINE] = self.request_init_engine
-        self.response_dict[rpc.RESPONSE_INIT_REQUEST] = self.response_init_engine
-        self.response_dict[rpc.REQUEST_IS_SPIDER_IDLE] = self.request_is_spider_idle
-        self.response_dict[rpc.RESPONSE_SPIDER_IDLE_STATUS] = self.response_spider_idle_status
-        self.response_dict[rpc.REQUEST_START_A_ENGINE] = self.request_start_a_engine
-
-
-    def request_init_engine(self, msg):
-        self.factory.node_manager.init_engine(msg)
-        self.transport.write(rpc.RESPONSE_INIT_REQUEST + msg)
-
-    def response_init_engine(self, msg):
-        if msg == 'ok':
-            self.factory.node_manager.init_engine_manager(msg, self.addr.host, self.addr.port)
-
-    def request_is_spider_idle(self, msg):
-        result = self.factory.node_manager.is_idle(msg)
-        self.transport.write(rpc.RESPONSE_SPIDER_IDLE_STATUS + msg + ':' + result)
-
-    def response_spider_idle_status(self, msg):
-        msg = msg.split(':')
-        spider_name = msg[0]
-        is_idle = True if msg[1] == 'true' else False
-        if is_idle:
-            self.factory.node_manager.idle_engine_manager(spider_name, self.addr.host, self.addr.port)
-
-    def request_start_a_engine(self, msg):
-        self.factory.node_manager.start_a_engine(msg)
+    def __init__(self, transport_manager):
+        self.transport_manager = transport_manager
 
     def dataReceived(self, data):
         type = data[0:rpc.LENGTH]
         msg = data[rpc.LENGTH:]
-        self.response_dict[type](msg)
+        response_dict[type](self, msg)
 
 
 class TransportClient(protocol.Protocol):
-    def __init__(self, factory, addr):
-        self.factory = factory
+    def __init__(self, transport_manager, addr):
+        self.transport_manager = transport_manager
         self.addr = addr
 
     def connectionMade(self):
-        self.factory.client_dict[self.addr.host] = self
-        self.factory.transport_manager.connect_made(self.addr.host, self.addr.port)
+        self.transport_manager.add_client_dict(self.addr.host, self.addr.port, self)
+        self.transport_manager.connect_made(self.addr.host, self.addr.port)
+        self.transport.write(rpc.REQUEST_ADD_ME + str(self.transport_manager.port))
 
     def send_message(self, message):
         self.transport.write(message)
 
     def dataReceived(self, data):
-        self.factory.transport_manager.manager_data(data, self.addr)
+        type = data[0:rpc.LENGTH]
+        msg = data[rpc.LENGTH:]
+        response_dict[type](self, msg)
 
     def connectionLost(self, reason):
-        del self.factory.client_dict[self.addr.host]
+        del self.transport_manager.client_dict[make_client_key(self.addr.host, self.addr.port)]
 
 
 class TransportClientFactory(protocol.ClientFactory):
     protocol = TransportClient
 
     def __init__(self, transport_manager):
-        self.client_dict = dict()
         self.transport_manager = transport_manager
 
     def buildProtocol(self, addr):
-        return TransportClient(self, addr)
+        return TransportClient(self.transport_manager, addr)
 
     def clientConnectionFailed(self, connector, reason):
-        print "Connection failed - goodbye!"
-        reactor.stop()
+        logging.info("Connection failed - to -" + connector.host + ':' + str(connector.port))
 
     def clientConnectionLost(self, connector, reason):
-        print "Connection lost - goodbye!"
-        reactor.stop()
+        logging.info("Connection lost - to -" + connector.host + ':' + str(connector.port))

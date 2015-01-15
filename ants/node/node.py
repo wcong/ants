@@ -8,6 +8,7 @@ from ants.cluster import cluster
 from ants.crawl import crawl
 import nodeinfo
 import rpc
+import pickle
 from ants.utils import jsonextends
 import logging
 
@@ -32,8 +33,12 @@ class NodeManager(manager.Manager):
         self.multicast_manager = multicast.MulticastManager(self, self.cluster_manager.find_node)
         self.webservice_manager = webservice.WebServiceManager(self)
 
-        self.manager_list = [self.cluster_manager, self.transport_manager, self.multicast_manager,
-                             self.webservice_manager]
+        # net work manager should start first
+        self.manager_list = [
+            self.transport_manager,
+            self.multicast_manager,
+            self.cluster_manager,
+            self.webservice_manager]
 
         self.crawl_client = crawl.CrawlClient(self)
 
@@ -54,8 +59,13 @@ class NodeManager(manager.Manager):
         for inner_manager in self.manager_list:
             inner_manager.start()
 
-        self.multicast_manager.cast()
+    def connect_to_node(self, ip, port):
+        if ip == self.node_info.ip and port == self.node_info.port:
+            return
+        self.transport_manager.run_client(ip, port)
 
+    def add_node_to_cluster(self, ip, port):
+        self.cluster_manager.add_node(ip, port)
 
     def is_idle(self, spider_name, node=None):
         if not node or node == self.node_info:
@@ -70,7 +80,8 @@ class NodeManager(manager.Manager):
     def init_engine(self, spider_name, node=None):
         if not node or node == self.node_info:
             self.crawl_client.init_engine(spider_name)
-            self.init_engine_manager(spider_name, self.node_info.ip, self.node_info.port)
+            if self.node_info == self.cluster_manager.cluster_info.master_node:
+                self.init_engine_manager(spider_name, self.node_info.ip, self.node_info.port)
         else:
             self.transport_manager.send_request(node.ip, node.port, rpc.REQUEST_INIT_ENGINE + spider_name)
 
@@ -82,14 +93,15 @@ class NodeManager(manager.Manager):
             self.crawl_client.accept_request(request.spider_name, request)
         else:
             self.transport_manager.send_request(node.ip, node.port,
-                                                rpc.REQUEST_SEND_REQUEST + json.dumps(request, cls=jsonextends.JSON))
+                                                rpc.REQUEST_SEND_REQUEST + pickle.dumps(request))
 
-    def send_request_to_master(self, request, node=None):
-        if not node or node == self.node_info:
+    def send_request_to_master(self, request):
+        master_node = self.cluster_manager.cluster_info.master_node
+        if master_node == self.node_info:
             self.cluster_manager.add_request(request)
         else:
-            self.transport_manager.send_request(node.ip, node.port,
-                                                rpc.REQUEST_SEND_REQUEST + json.dumps(request, cls=jsonextends.JSON))
+            self.transport_manager.send_request(master_node.ip, master_node.port,
+                                                rpc.RESPONSE_SEND_REQUEST + pickle.dumps(request))
 
 
     def start_a_engine(self, spider_name):
