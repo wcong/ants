@@ -158,17 +158,19 @@ class Scraper(object):
         """
         if isinstance(output, Request):
             self.engine.add_request(output)
+            self.engine.send_request_result(request)
         elif isinstance(output, BaseItem):
             self.slot.itemproc_size += 1
             dfd = self.itemproc.process_item(output, spider)
-            dfd.addBoth(self._itemproc_finished, output, response, spider)
+            dfd.addBoth(self._itemproc_finished, output, request, response, spider)
             return dfd
         elif output is None:
-            pass
+            self.engine.send_request_result()
         else:
             typename = type(output).__name__
-            log.spider_log('Spider must return Request, BaseItem or None, got ' + typename + ' in ' + request.url,
-                           level=log.ERROR, spider=spider)
+            msg = 'Spider must return Request, BaseItem or None, got ' + typename + ' in ' + request.url
+            log.spider_log(msg, level=log.ERROR, spider=spider)
+            self.engine.send_request_result(request, msg)
 
     def _log_download_errors(self, spider_failure, download_failure, request, spider):
         """Log and silence errors that come from the engine (typically download
@@ -187,7 +189,7 @@ class Scraper(object):
         if spider_failure is not download_failure:
             return spider_failure
 
-    def _itemproc_finished(self, output, item, response, spider):
+    def _itemproc_finished(self, output, item, request, response, spider):
         """ItemProcessor finished for the given ``item`` and returned ``output``
         """
         self.slot.itemproc_size -= 1
@@ -202,8 +204,10 @@ class Scraper(object):
                                                             exception=output.value)
             else:
                 log.spider_log('Error processing %s' % item, spider=spider, level=log.ERROR)
+            self.engine.send_request_result(request, ex)
         else:
             log.spider_log('scrape ok in:' + response.url, spider=spider)
+            self.engine.send_request_result(request)
             return self.signals.send_catch_log_deferred(signal=signals.item_scraped,
                                                         item=output,
                                                         response=response,

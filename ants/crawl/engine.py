@@ -18,23 +18,37 @@ class EngineServer():
         self.spider = spider
         self.scheduler = scheduler
         self.cluster_manager = cluster_manager
-        self.status = EngineStatus()
+        self.status = EngineStatusServer()
         self.distribute_index = 0
 
     def add_request(self, request):
         request.spider_name = self.spider.name
+        request.hash_code = hash(
+            self.spider.name + str(request) + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self.scheduler.push_queue_request(request)
-
-    def pop_request(self):
-        return self.scheduler.next_request()
+        self.status.waiting_list.append(request)
 
     def start(self):
         self.cluster_manager.init_all_node(self.spider.name, self.run)
 
     def run(self):
         for request in self.spider.start_requests():
-            request.spider_name = self.spider.name
-            self.scheduler.push_queue_request(request)
+            self.add_request(request)
+
+    def log_distributed_request(self, request, node_info):
+        self.status.waiting_list.remove(request)
+        self.status.distribute_dict.setdefault(str(node_info.name), list()).append(request)
+
+    def accept_request_result(self, node_name, request_hash_code, msg):
+        node_name = str(node_name)
+        del_index = None
+        for index, request in enumerate(self.status.distribute_dict[node_name]):
+            if request.hash_code == request_hash_code:
+                self.status.crawled_dict.setdefault(node_name, list()).append(request)
+                del_index = index
+                break
+        if del_index:
+            del self.status.distribute_dict[node_name][del_index]
 
     def stop(self):
         '''
@@ -51,7 +65,7 @@ class EngineClient():
     def __init__(self, spider, node_manager, schedule):
         self.settings = node_manager.settings
         self.node_manager = node_manager
-        self.status = EngineStatus()
+        self.status = EngineStatusClient()
         self.stats = load_object(self.settings['STATS_CLASS'])(self)
         self.spider = spider
         self.scheduler = schedule
@@ -63,12 +77,23 @@ class EngineClient():
     def accept_request(self, request):
         request.spider_name = self.spider.name
         self.scheduler.push_queue_request(request)
+        self.status.waiting_list.append(request)
 
     def add_request(self, request):
         request.spider_name = self.spider.name
         self.node_manager.send_request_to_master(request)
 
+    def send_request_result(self, request, msg='ok'):
+        self.status.running_list.remove(request)
+        self.status.crawled_num += 1
+        self.node_manager.send_result_to_master(self.spider.name,
+                                                self.node_manager.node_info.name,
+                                                request.hash_code,
+                                                msg)
+
     def crawl_request(self, request):
+        self.status.waiting_list.remove(request)
+        self.status.running_list.append(request)
         d = self._download(request, self.spider)
         d.addBoth(self._handle_downloader_output, request, self.spider)
         d.addErrback(log.spider_log, spider=self.spider)
@@ -91,8 +116,7 @@ class EngineClient():
         return d
 
     def _downloaded(self, response, request, spider):
-        return self.download(response, spider) \
-            if isinstance(response, Request) else response
+        return self.download(response, spider) if isinstance(response, Request) else response
 
     def _download(self, request, spider):
         def _on_success(response):
@@ -109,7 +133,7 @@ class EngineClient():
         return dwld
 
 
-class EngineStatus():
+class EngineStatus(object):
     STATUS_INIT = 0
     STATUS_RUNNING = 1
     STATUS_STOP = 2
@@ -117,3 +141,20 @@ class EngineStatus():
     def __init__(self):
         self.status = self.STATUS_INIT
         self.start_time = datetime.datetime.now()
+
+
+class EngineStatusServer(EngineStatus):
+    def __init__(self):
+        super(EngineStatusServer, self).__init__()
+        self.crawled_dict = dict()
+        self.distribute_dict = dict()
+        self.waiting_list = list()
+
+
+class EngineStatusClient(EngineStatus):
+    def __init__(self):
+        super(EngineStatusClient, self).__init__()
+        self.crawled_num = 0
+        self.running_list = list()
+        self.waiting_list = list()
+

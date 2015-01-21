@@ -1,17 +1,13 @@
-from os.path import dirname, join
 from setuptools import setup, find_packages
 
 
-with open(join(dirname(__file__), 'ants/VERSION'), 'rb') as f:
-    version = f.read().decode('ascii').strip()
-
 setup(
-    name='Scale-Crawl',
-    version=version,
+    name='ants',
+    version='0.0.1',
     url='https://github.com/wcong/ants',
-    description='A Scale Crawler from ants',
+    description='open source, distributed, restful crawler engine',
     long_description=open('README.rst').read(),
-    author='Scrapy developers',
+    author='wcong',
     maintainer='Wcong',
     maintainer_email='wc19920415@gmail.com',
     license='BSD',
@@ -19,7 +15,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     entry_points={
-        'console_scripts': ['ants = ants.cmdline:execute']
+        'console_scripts': ['ants = ants.bootstrap:execute']
     },
     classifiers=[
         'Framework :: Scrapy',

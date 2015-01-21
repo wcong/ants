@@ -21,9 +21,10 @@ class CrawlServer():
     def __init__(self, cluster_manager):
         self.settings = cluster_manager.settings
         self.cluster_manager = cluster_manager
+        self.spider_manager = cluster_manager.node_manager.spider_manager
         self.status = self.STATUS_STOP
         self.scheduler = scheduler.SchedulerServer(cluster_manager.settings)
-        self.spider_manager = spidermanager.SpiderManager(cluster_manager.node_manager.settings.get('SPIDER_MODULES'))
+
         self.running_spider_dict = dict()
         self.init_spider_dict = dict()
         self.idle_spider_dict = dict()
@@ -71,7 +72,9 @@ class CrawlServer():
             node_list = self.cluster_manager.cluster_info.node_list
             if self.distribute_index >= len(node_list):
                 self.distribute_index = 0
-            self.cluster_manager.node_manager.send_request_to_client(request, node_list[self.distribute_index])
+            node_info = node_list[self.distribute_index]
+            self.cluster_manager.node_manager.send_request_to_client(request, node_info)
+            self.running_spider_dict[request.spider_name].log_distributed_request(request, node_info)
             self.distribute_index += 1
         reactor.callLater(0, self)
 
@@ -80,6 +83,9 @@ class CrawlServer():
 
     def accept_request(self, spider_name, request):
         self.running_spider_dict[spider_name].add_request(request)
+
+    def accept_crawl_result(self, spider_name, node_name, request_hash_code, msg):
+        self.running_spider_dict[spider_name].accept_request_result(node_name, request_hash_code, msg)
 
 
 class CrawlClient():
@@ -94,7 +100,7 @@ class CrawlClient():
     def __init__(self, node_manager):
         self.status = self.STATUS_STOP
         self.node_manager = node_manager
-        self.spider_manager = spidermanager.SpiderManager(node_manager.settings.get('SPIDER_MODULES'))
+        self.spider_manager = self.node_manager.spider_manager
         self.scheduler = scheduler.SchedulerClient(node_manager.settings)
         self.running_spider_dict = dict()
 

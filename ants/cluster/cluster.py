@@ -74,11 +74,13 @@ class ClusterManager(manager.Manager):
         self.crawl_server.init_spider_job(spider_name)
         self.init_all_node(spider_name)
 
+    def accept_result_of_request(self, spider_name, node_name, request_code, msg):
+        self.crawl_server.accept_crawl_result(spider_name, node_name, request_code, msg)
+
 
 class ClusterInfo():
     def __init__(self, setting, local_node):
-        self.setting = setting
-        self.name = self.setting.get('CLUSTER_NAME')
+        self.name = setting.get('CLUSTER_NAME')
         self.local_node = local_node
         self.node_list = list()
         self.node_list.append(local_node)
@@ -94,6 +96,7 @@ class ClusterInfo():
             if had_node.name < master_node.name:
                 master_node = had_node
         if master_node != self.master_node:
+            logging.info("elect node:ip:" + master_node.ip + ';port:' + str(master_node.port) + ';master')
             self.master_node = master_node
 
     def contain_node(self, new_node):

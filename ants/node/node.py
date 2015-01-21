@@ -11,6 +11,7 @@ import rpc
 import pickle
 from ants.utils import jsonextends
 import logging
+from ants import spidermanager
 
 
 '''
@@ -27,6 +28,7 @@ accept request and deal with it
 class NodeManager(manager.Manager):
     def __init__(self, settings):
         self.settings = settings
+        self.spider_manager = spidermanager.SpiderManager(self.settings.get('SPIDER_MODULES'))
         self.node_info = nodeinfo.NodeInfo(multicast.get_host_name(), self.settings.get('TRANSPORT_PORT'))
         self.cluster_manager = cluster.ClusterManager(self)
         self.transport_manager = transport.TransportManager(self)
@@ -103,6 +105,18 @@ class NodeManager(manager.Manager):
             self.transport_manager.send_request(master_node.ip, master_node.port,
                                                 rpc.RESPONSE_SEND_REQUEST + pickle.dumps(request))
 
+    def send_result_to_master(self, spider_name, node_name, request_hash_code, msg):
+        master_node = self.cluster_manager.cluster_info.master_node
+        if master_node == self.node_info:
+            self.cluster_manager.accept_result_of_request(spider_name,
+                                                          node_name,
+                                                          request_hash_code,
+                                                          msg)
+        else:
+            self.transport_manager.send_request(master_node.ip,
+                                                master_node.port,
+                                                rpc.REQUEST_RESULT_OF_REQUEST + spider_name + ':' + str(node_name) + ':' + str(request_hash_code) + ':' + msg)
+
 
     def start_a_engine(self, spider_name):
         master_node = self.cluster_manager.cluster_info.master_node
@@ -111,6 +125,15 @@ class NodeManager(manager.Manager):
         else:
             self.transport_manager.send_request(master_node.ip, master_node.port,
                                                 rpc.REQUEST_START_A_ENGINE + spider_name)
+
+    def get_crawl_status(self):
+        master_node = self.cluster_manager.cluster_info.master_node
+        if self.node_info == master_node:
+            data = dict()
+            for spider_name, engine in self.cluster_manager.crawl_server.running_spider_dict.iteritems():
+                data[spider_name] = engine.status
+            return data
+
 
 
 

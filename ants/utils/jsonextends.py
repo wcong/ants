@@ -14,4 +14,4 @@ class JSON(json.JSONEncoder):
         elif hasattr(o, '__dict__'):
             return o.__dict__
         else:
-            return o
+            return str(o)

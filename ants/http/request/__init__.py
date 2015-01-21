@@ -5,19 +5,16 @@ requests in Scrapy.
 See documentation in docs/topics/request-response.rst
 """
 
-import copy
-
 from w3lib.url import safe_url_string
 
 from ants.http.headers import Headers
 from ants.utils.trackref import object_ref
-from ants.utils.decorator import deprecated
 from ants.utils.url import escape_ajax
 from ants.http.common import obsolete_setter
 
-class Request(object_ref):
 
-    def __init__(self, url, callback=None, method='GET', headers=None, body=None, 
+class Request(object_ref):
+    def __init__(self, url, callback=None, method='GET', headers=None, body=None,
                  cookies=None, meta=None, encoding='utf-8', priority=0,
                  dont_filter=False, errback=None):
 
@@ -53,7 +50,7 @@ class Request(object_ref):
         elif isinstance(url, unicode):
             if self.encoding is None:
                 raise TypeError('Cannot convert unicode url - %s has no encoding' %
-                    type(self).__name__)
+                                type(self).__name__)
             self._set_url(url.encode(self.encoding))
         else:
             raise TypeError('Request url must be str or unicode, got %s:' % type(url).__name__)
@@ -71,7 +68,7 @@ class Request(object_ref):
         elif isinstance(body, unicode):
             if self.encoding is None:
                 raise TypeError('Cannot convert unicode body - %s has no encoding' %
-                    type(self).__name__)
+                                type(self).__name__)
             self._body = body.encode(self.encoding)
         elif body is None:
             self._body = ''
@@ -98,7 +95,8 @@ class Request(object_ref):
         given new values.
         """
         for x in ['url', 'method', 'headers', 'body', 'cookies', 'meta', \
-                'encoding', 'priority', 'dont_filter', 'callback', 'errback']:
+                  'encoding', 'priority', 'dont_filter', 'callback', 'errback']:
             kwargs.setdefault(x, getattr(self, x))
         cls = kwargs.pop('cls', self.__class__)
         return cls(*args, **kwargs)
+

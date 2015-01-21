@@ -224,7 +224,7 @@ TEMPLATES_DIR = abspath(join(dirname(__file__), '..', 'templates'))
 
 URLLENGTH_LIMIT = 2083
 
-USER_AGENT = 'Scrapy/%s (+http://ants.org)' % import_module('ants').__version__
+USER_AGENT = 'Ants/%s (+https://github.com/wcong/ants)' % import_module('ants').__version__
 
 TELNETCONSOLE_ENABLED = 1
 TELNETCONSOLE_PORT = [6023, 6073]

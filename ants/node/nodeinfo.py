@@ -1,4 +1,5 @@
 import json
+import threading
 
 
 class NodeInfo:
@@ -14,3 +15,15 @@ class NodeInfo:
 def make_node_info_from_transport(data):
     msg = json.loads(data)
     return NodeInfo(msg['ip'], msg['port'])
+
+
+class NodeMonitor(threading.Thread):
+    def __init__(self, node_info):
+        super(NodeMonitor, self).__init__()
+        self.node_info = node_info
+
+    # TODO system monitor
+    def run(self):
+        '''
+
+        '''

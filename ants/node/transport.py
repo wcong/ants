@@ -115,6 +115,11 @@ def response_send_request(tcp, msg):
     tcp.transport_manager.node_manager.send_request_to_master(pickle.loads(msg))
 
 
+def request_result_of_request(tcp, msg):
+    data = msg.split(':')
+    tcp.transport_manager.node_manager.send_result_to_master(data[0], int(data[1]), int(data[2]), data[3])
+
+
 response_dict = dict()
 response_dict[rpc.REQUEST_INIT_ENGINE] = request_init_engine
 response_dict[rpc.RESPONSE_INIT_REQUEST] = response_init_engine
@@ -124,6 +129,7 @@ response_dict[rpc.REQUEST_START_A_ENGINE] = request_start_a_engine
 response_dict[rpc.REQUEST_ADD_ME] = request_add_me
 response_dict[rpc.REQUEST_SEND_REQUEST] = request_send_request
 response_dict[rpc.RESPONSE_SEND_REQUEST] = response_send_request
+response_dict[rpc.REQUEST_RESULT_OF_REQUEST] = request_result_of_request
 
 
 class TransportServerFactory(protocol.Factory):

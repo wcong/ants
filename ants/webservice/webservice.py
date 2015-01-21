@@ -23,6 +23,7 @@ class WebServiceManager(manager.Manager):
 
     def __init_service(self):
         resource = Service(self.node_manager)
+        resource.putChild('cluster', ClusterService(self.node_manager))
         resource.putChild('node', NodeService(self.node_manager))
         resource.putChild('spider_list', SpiderListService(self.node_manager))
         resource.putChild('crawl', CrawlService(self.node_manager))
@@ -58,9 +59,14 @@ class Service(resource.Resource):
         return json.dumps(data)
 
 
-class NodeService(Service):
+class ClusterService(Service):
     def render_GET(self, request):
         return json.dumps(self.node_manager.cluster_manager.cluster_info, cls=JSON)
+
+
+class NodeService(Service):
+    def render_GET(self, request):
+        return json.dumps(self.node_manager.node_info, cls=JSON)
 
 
 class SpiderListService(Service):
@@ -84,7 +90,7 @@ class CrawlService(Service):
 
 class CrawlStatusService(Service):
     def render_GET(self, request):
-        return json.dumps(self.node_manager.cluster_manager.crawl_server, cls=JSON)
+        return json.dumps(self.node_manager.get_crawl_status(), cls=JSON)
 
 
 
