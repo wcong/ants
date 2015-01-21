@@ -157,8 +157,7 @@ class Scraper(object):
         from the given spider
         """
         if isinstance(output, Request):
-            self.engine.add_request(output)
-            self.engine.send_request_result(request)
+            self.engine.add_request(request,output)
         elif isinstance(output, BaseItem):
             self.slot.itemproc_size += 1
             dfd = self.itemproc.process_item(output, spider)
@@ -172,7 +171,8 @@ class Scraper(object):
             log.spider_log(msg, level=log.ERROR, spider=spider)
             self.engine.send_request_result(request, msg)
 
-    def _log_download_errors(self, spider_failure, download_failure, request, spider):
+    @staticmethod
+    def _log_download_errors(spider_failure, download_failure, request, spider):
         """Log and silence errors that come from the engine (typically download
         errors that got propagated thru here)
         """
@@ -212,4 +212,3 @@ class Scraper(object):
                                                         item=output,
                                                         response=response,
                                                         spider=spider)
-

@@ -100,6 +100,8 @@ class NodeManager(manager.Manager):
     def send_request_to_master(self, request):
         master_node = self.cluster_manager.cluster_info.master_node
         if master_node == self.node_info:
+            if hasattr(request, 'source_hash_code'):
+                self.send_result_to_master(request.spider_name, request.node_name, request.source_hash_code, 'request')
             self.cluster_manager.add_request(request)
         else:
             self.transport_manager.send_request(master_node.ip, master_node.port,
@@ -115,7 +117,8 @@ class NodeManager(manager.Manager):
         else:
             self.transport_manager.send_request(master_node.ip,
                                                 master_node.port,
-                                                rpc.REQUEST_RESULT_OF_REQUEST + spider_name + ':' + str(node_name) + ':' + str(request_hash_code) + ':' + msg)
+                                                rpc.RESPONSE_RESULT_OF_REQUEST + spider_name + ':' + str(
+                                                    node_name) + ':' + str(request_hash_code) + ':' + msg)
 
 
     def start_a_engine(self, spider_name):

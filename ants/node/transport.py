@@ -129,7 +129,7 @@ response_dict[rpc.REQUEST_START_A_ENGINE] = request_start_a_engine
 response_dict[rpc.REQUEST_ADD_ME] = request_add_me
 response_dict[rpc.REQUEST_SEND_REQUEST] = request_send_request
 response_dict[rpc.RESPONSE_SEND_REQUEST] = response_send_request
-response_dict[rpc.REQUEST_RESULT_OF_REQUEST] = request_result_of_request
+response_dict[rpc.RESPONSE_RESULT_OF_REQUEST] = request_result_of_request
 
 
 class TransportServerFactory(protocol.Factory):

@@ -79,8 +79,10 @@ class EngineClient():
         self.scheduler.push_queue_request(request)
         self.status.waiting_list.append(request)
 
-    def add_request(self, request):
+    def add_request(self, source_request, request):
         request.spider_name = self.spider.name
+        request.source_hash_code = source_request.hash_code
+        request.node_name = self.node_manager.node_info.name
         self.node_manager.send_request_to_master(request)
 
     def send_request_result(self, request, msg='ok'):
@@ -103,7 +105,7 @@ class EngineClient():
         assert isinstance(response, (Request, Response, Failure)), response
         # downloader middleware can return requests (for example, redirects)
         if isinstance(response, Request):
-            self.add_request(response)
+            self.add_request(request, response)
             return
         # response is a Response or Failure
         d = self.scraper.enqueue_scrape(response, request, spider)
