@@ -143,6 +143,7 @@ class Scraper(object):
         log.spider_log(_failure, "Spider error processing %s" % request, spider=spider)
         self.signals.send_catch_log(signal=signals.spider_error, failure=_failure, response=response, pider=spider)
         self.engine.stats.inc_value("spider_exceptions/%s" % _failure.value.__class__.__name__, spider=spider)
+        self.engine.send_request_result(request, str(exc))
 
     def handle_spider_output(self, result, request, response, spider):
         if not result:
@@ -157,7 +158,7 @@ class Scraper(object):
         from the given spider
         """
         if isinstance(output, Request):
-            self.engine.add_request(request,output)
+            self.engine.add_request(request, output)
         elif isinstance(output, BaseItem):
             self.slot.itemproc_size += 1
             dfd = self.itemproc.process_item(output, spider)

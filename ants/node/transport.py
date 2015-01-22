@@ -120,6 +120,19 @@ def request_result_of_request(tcp, msg):
     tcp.transport_manager.node_manager.send_result_to_master(data[0], int(data[1]), int(data[2]), data[3])
 
 
+def request_stop_engine(tcp, msg):
+    tcp.transport_manager.node_manager.stop_engine(msg)
+    return_msg = rpc.RESPONSE_STOP_ENGINE + str(tcp.transport_manager.port) + ':' + msg + ':' + 'ok'
+    tcp.transport.write(return_msg)
+
+
+def response_stop_engine(tcp, msg):
+    data = msg.split(':')
+    if data[2] == 'ok':
+        ip = tcp.transport.getPeer().host
+        tcp.transport_manager.node_manager.stop_engine_manager(data[1], ip, int(data[0]))
+
+
 response_dict = dict()
 response_dict[rpc.REQUEST_INIT_ENGINE] = request_init_engine
 response_dict[rpc.RESPONSE_INIT_REQUEST] = response_init_engine
@@ -130,6 +143,8 @@ response_dict[rpc.REQUEST_ADD_ME] = request_add_me
 response_dict[rpc.REQUEST_SEND_REQUEST] = request_send_request
 response_dict[rpc.RESPONSE_SEND_REQUEST] = response_send_request
 response_dict[rpc.RESPONSE_RESULT_OF_REQUEST] = request_result_of_request
+response_dict[rpc.REQUEST_STOP_ENGINE] = request_stop_engine
+response_dict[rpc.RESPONSE_STOP_ENGINE] = response_stop_engine
 
 
 class TransportServerFactory(protocol.Factory):
@@ -145,9 +160,13 @@ class TransportServer(protocol.Protocol):
         self.transport_manager = transport_manager
 
     def dataReceived(self, data):
-        type = data[0:rpc.LENGTH]
-        msg = data[rpc.LENGTH:]
-        response_dict[type](self, msg)
+        msg_list = data.split(rpc.END_SIGN)
+        for msg in msg_list:
+            if msg:
+                type = msg[0:rpc.LENGTH]
+                logging.info('get msg:' + type)
+                data = msg[rpc.LENGTH:]
+                response_dict[type](self, data)
 
 
 class TransportClient(protocol.Protocol):
@@ -161,12 +180,16 @@ class TransportClient(protocol.Protocol):
         self.transport.write(rpc.REQUEST_ADD_ME + str(self.transport_manager.port))
 
     def send_message(self, message):
-        self.transport.write(message)
+        self.transport.write(message + rpc.END_SIGN)
 
     def dataReceived(self, data):
-        type = data[0:rpc.LENGTH]
-        msg = data[rpc.LENGTH:]
-        response_dict[type](self, msg)
+        msg_list = data.split(rpc.END_SIGN)
+        for msg in msg_list:
+            if msg:
+                type = msg[0:rpc.LENGTH]
+                logging.info('get msg:' + type)
+                data = msg[rpc.LENGTH:]
+                response_dict[type](self, data)
 
     def connectionLost(self, reason):
         del self.transport_manager.client_dict[make_client_key(self.addr.host, self.addr.port)]

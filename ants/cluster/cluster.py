@@ -50,16 +50,6 @@ class ClusterManager(manager.Manager):
         logging.info("add ip:" + ip + ';port:' + str(port) + ';node to cluster')
         self.cluster_info.append_node(nodeinfo.NodeInfo(ip, port))
 
-    def is_all_idle(self, spider_name):
-        self.crawl_server.init_idle_job_dict(spider_name, self.cluster_info.node_list)
-        for node in self.cluster_info.node_list:
-            self.node_manager.is_idle(spider_name, node)
-
-    def idle_engine_manager(self, spider_name, idle_node_info):
-        self.crawl_server.remove_idle_node(spider_name, idle_node_info)
-        if len(self.crawl_server.idle_spider_dict[spider_name]) == 0:
-            self.crawl_server.stop_engine(spider_name)
-
     def init_all_node(self, spider_name):
         self.crawl_server.init_init_job_dict(spider_name, self.cluster_info.node_list)
         for node in self.cluster_info.node_list:
@@ -76,6 +66,17 @@ class ClusterManager(manager.Manager):
 
     def accept_result_of_request(self, spider_name, node_name, request_code, msg):
         self.crawl_server.accept_crawl_result(spider_name, node_name, request_code, msg)
+
+
+    def stop_all_node(self, spider_name):
+        self.crawl_server.init_stop_job_dict(spider_name, self.cluster_info.node_list)
+        for node in self.cluster_info.node_list:
+            self.node_manager.stop_engine(spider_name, node)
+
+    def stop_engine_manager(self, spider_name, inited_node_info):
+        self.crawl_server.remove_stop_job_dict(spider_name, inited_node_info)
+        if not self.crawl_server.stop_spider_dict[spider_name]:
+            self.crawl_server.stop_engine(spider_name)
 
 
 class ClusterInfo():

@@ -16,7 +16,7 @@ let the node do what he need to do
 
 logging.basicConfig(format="[%(asctime)s %(module)s %(lineno)d]%(levelname)s:%(message)s",
                     datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO)
+                    level=logging.DEBUG)
 
 parser = argparse.ArgumentParser(description='ants -- scale crawler')
 parser.add_argument('-tcp_port', help='transport port', type=int, dest='tcp_port')

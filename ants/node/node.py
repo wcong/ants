@@ -87,6 +87,17 @@ class NodeManager(manager.Manager):
         else:
             self.transport_manager.send_request(node.ip, node.port, rpc.REQUEST_INIT_ENGINE + spider_name)
 
+    def stop_engine(self, spider_name, node=None):
+        if not node or node == self.node_info:
+            self.crawl_client.stop_engine(spider_name)
+            if self.node_info == self.cluster_manager.cluster_info.master_node:
+                self.stop_engine_manager(spider_name, self.node_info.ip, self.node_info.port)
+        else:
+            self.transport_manager.send_request(node.ip, node.port, rpc.REQUEST_STOP_ENGINE + spider_name)
+
+    def stop_engine_manager(self, spider_name, ip, port):
+        self.cluster_manager.stop_engine_manager(spider_name, nodeinfo.NodeInfo(ip, port))
+
     def init_engine_manager(self, spider_name, ip, port):
         self.cluster_manager.init_engine_manager(spider_name, nodeinfo.NodeInfo(ip, port))
 
@@ -100,9 +111,14 @@ class NodeManager(manager.Manager):
     def send_request_to_master(self, request):
         master_node = self.cluster_manager.cluster_info.master_node
         if master_node == self.node_info:
-            if hasattr(request, 'source_hash_code'):
-                self.send_result_to_master(request.spider_name, request.node_name, request.source_hash_code, 'request')
+            # #
+            # NOTICE must add request first,if none request in waiting list,engine will stop
             self.cluster_manager.add_request(request)
+            if hasattr(request, 'source_hash_code'):
+                self.cluster_manager.accept_result_of_request(request.spider_name,
+                                                              request.node_name,
+                                                              request.source_hash_code,
+                                                              'request')
         else:
             self.transport_manager.send_request(master_node.ip, master_node.port,
                                                 rpc.RESPONSE_SEND_REQUEST + pickle.dumps(request))
@@ -134,7 +150,7 @@ class NodeManager(manager.Manager):
         if self.node_info == master_node:
             data = dict()
             for spider_name, engine in self.cluster_manager.crawl_server.running_spider_dict.iteritems():
-                data[spider_name] = engine.status
+                data[spider_name] = engine.status.make_readable_status()
             return data
 
 

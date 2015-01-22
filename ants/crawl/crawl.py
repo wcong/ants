@@ -27,7 +27,7 @@ class CrawlServer():
 
         self.running_spider_dict = dict()
         self.init_spider_dict = dict()
-        self.idle_spider_dict = dict()
+        self.stop_spider_dict = dict()
         self.distribute_index = 0
 
     def init_spider_job(self, spider_name):
@@ -44,18 +44,17 @@ class CrawlServer():
             self.status = self.STATUS_RUNNING
             self.distribute()
 
-
-    def init_idle_job_dict(self, spider_name, node_list):
-        self.idle_spider_dict[spider_name] = list(node_list)
-
-    def remove_idle_node(self, spider_name, node_info):
-        self.idle_spider_dict[spider_name].remove(node_info)
-
     def init_init_job_dict(self, spider_name, node_list):
         self.init_spider_dict[spider_name] = list(node_list)
 
     def remove_init_node(self, spider_name, node_info):
         self.init_spider_dict[spider_name].remove(node_info)
+
+    def init_stop_job_dict(self, spider_name, node_list):
+        self.stop_spider_dict[spider_name] = list(node_list)
+
+    def remove_stop_job_dict(self, spider_name, node_info):
+        self.stop_spider_dict[spider_name].remove(node_info)
 
     def stop_engine(self, spider_name):
         self.running_spider_dict[spider_name].stop()
@@ -114,6 +113,10 @@ class CrawlClient():
         crawl_engine = engine.EngineClient(spider, self.node_manager, self.scheduler)
         self.running_spider_dict[spider_name] = crawl_engine
         self.run()
+
+    def stop_engine(self, spider_name):
+        self.running_spider_dict[spider_name].stop()
+        del self.running_spider_dict[spider_name]
 
     def run(self):
         if self.status == self.STATUS_STOP:

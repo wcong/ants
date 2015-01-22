@@ -47,18 +47,13 @@ class EngineServer():
                 self.status.crawled_dict.setdefault(node_name, list()).append(request)
                 del_index = index
                 break
-        if del_index:
+        if del_index is not None:
             del self.status.distribute_dict[node_name][del_index]
+        if not self.status.waiting_list and self.status.all_node_empty():
+            self.cluster_manager.stop_all_node(self.spider.name)
 
     def stop(self):
-        '''
-        :return:
-        '''
-
-    def is_idle(self):
-        '''
-        :return:
-        '''
+        logging.info(self.spider.name + " stop")
 
 
 class EngineClient():
@@ -73,6 +68,10 @@ class EngineClient():
         self.downloader = downloader.Downloader(self)
         self.extension_manager = ExtensionManager(self)
         self.scraper = scrapy.Scraper(self, spider)
+
+    def stop(self):
+        self.signals.send_catch_log(signal=signals.spider_closed)
+        self.signals.disconnect_all()
 
     def accept_request(self, request):
         request.spider_name = self.spider.name
@@ -151,6 +150,19 @@ class EngineStatusServer(EngineStatus):
         self.crawled_dict = dict()
         self.distribute_dict = dict()
         self.waiting_list = list()
+
+    def all_node_empty(self):
+        for v in self.distribute_dict.itervalues():
+            if v:
+                return False
+        return True
+
+    def make_readable_status(self):
+        data = dict()
+        data['crawled_dict'] = {k: len(v) for k, v in self.crawled_dict.iteritems()}
+        data['distribute_dict'] = {k: len(v) for k, v in self.distribute_dict.iteritems()}
+        data['waiting_list'] = self.waiting_list
+        return data
 
 
 class EngineStatusClient(EngineStatus):
