@@ -254,6 +254,5 @@ this is where cluster setting
 CLUSTER_NAME = 'ants'
 TRANSPORT_PORT = 8300
 HTTP_PORT = 8200
-MULTICAST_ENABLED = False
-NODE_LIST = ('127.0.0.1', 9300,
-             '127.0.0.1', 8300)
+MULTICAST_ENABLED = True
+NODE_LIST = []

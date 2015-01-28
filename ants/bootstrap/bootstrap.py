@@ -5,6 +5,7 @@ import sys
 from twisted.internet import reactor
 from ants.node import node
 from ants import settings
+from conf import settings as project_settings
 import logging
 import argparse
 
@@ -27,6 +28,7 @@ class Bootstrap():
     def __init__(self, args):
         logging.info("do not panic,it is shipping")
         self.setting = settings.Settings()
+        self.setting.setmodule(project_settings)
         if args:
             cmd_args = parser.parse_args(args)
             if cmd_args.tcp_port:
