@@ -1,3 +1,4 @@
+### install
 Twisted>=10.0.0
 lxml
 pyOpenSSL
@@ -5,3 +6,7 @@ cssselect>=0.9
 w3lib>=1.8.0
 queuelib
 six>=1.5.2
+### text
+mock
+mitmproxy >= 0.10
+pytest-twisted
