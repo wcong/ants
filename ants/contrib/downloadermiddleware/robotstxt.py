@@ -7,7 +7,7 @@ enable this middleware and enable the ROBOTSTXT_OBEY setting.
 import robotparser
 
 from ants.utils import log
-from ants.exceptions import NotConfigured, IgnoreRequest
+from ants.utils.exceptions import NotConfigured, IgnoreRequest
 from ants.http import Request
 from ants.utils.httpobj import urlparse_cached
 

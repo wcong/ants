@@ -11,7 +11,7 @@ from importlib import import_module
 from twisted.internet import task
 
 from ants import signals
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.mail import MailSender
 from ants.utils.engine import get_engine_status
 from ants.utils import log

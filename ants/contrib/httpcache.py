@@ -5,16 +5,17 @@ from importlib import import_module
 from time import time
 from weakref import WeakKeyDictionary
 from email.utils import mktime_tz, parsedate_tz
+
 from w3lib.http import headers_raw_to_dict, headers_dict_to_raw
+
 from ants.http import Headers
-from ants.responsetypes import responsetypes
+from ants.utils.responsetypes import responsetypes
 from ants.utils.request import request_fingerprint
 from ants.utils.project import data_path
 from ants.utils.httpobj import urlparse_cached
 
 
 class DummyPolicy(object):
-
     def __init__(self, settings):
         self.ignore_schemes = settings.getlist('HTTPCACHE_IGNORE_SCHEMES')
         self.ignore_http_codes = [int(x) for x in settings.getlist('HTTPCACHE_IGNORE_HTTP_CODES')]
@@ -33,7 +34,6 @@ class DummyPolicy(object):
 
 
 class RFC2616Policy(object):
-
     MAXAGE = 3600 * 24 * 365  # one year
 
     def __init__(self, settings):
@@ -161,7 +161,6 @@ class RFC2616Policy(object):
 
 
 class DbmCacheStorage(object):
-
     def __init__(self, settings):
         self.cachedir = data_path(settings['HTTPCACHE_DIR'], createdir=True)
         self.expiration_secs = settings.getint('HTTPCACHE_EXPIRATION_SECS')
@@ -216,7 +215,6 @@ class DbmCacheStorage(object):
 
 
 class FilesystemCacheStorage(object):
-
     def __init__(self, settings):
         self.cachedir = data_path(settings['HTTPCACHE_DIR'])
         self.expiration_secs = settings.getint('HTTPCACHE_EXPIRATION_SECS')
@@ -286,9 +284,9 @@ class FilesystemCacheStorage(object):
 
 
 class LeveldbCacheStorage(object):
-
     def __init__(self, settings):
         import leveldb
+
         self._leveldb = leveldb
         self.cachedir = data_path(settings['HTTPCACHE_DIR'], createdir=True)
         self.expiration_secs = settings.getint('HTTPCACHE_EXPIRATION_SECS')
@@ -345,7 +343,6 @@ class LeveldbCacheStorage(object):
 
     def _request_key(self, request):
         return request_fingerprint(request)
-
 
 
 def parse_cachecontrol(header):

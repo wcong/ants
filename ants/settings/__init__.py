@@ -1,12 +1,12 @@
-import six
 import json
 import warnings
 from collections import MutableMapping
 from importlib import import_module
 
-from ants.utils.deprecate import create_deprecated_class
-from ants.exceptions import ScrapyDeprecationWarning
+import six
 
+from ants.utils.deprecate import create_deprecated_class
+from ants.utils.exceptions import ScrapyDeprecationWarning
 from . import default_settings
 
 

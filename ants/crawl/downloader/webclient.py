@@ -6,8 +6,8 @@ from twisted.web.http import HTTPClient
 from twisted.internet import defer
 
 from ants.http import Headers
+from ants.utils.responsetypes import responsetypes
 from ants.utils.httpobj import urlparse_cached
-from ants.responsetypes import responsetypes
 
 
 def _parsed_url_args(parsed):
@@ -28,11 +28,10 @@ def _parse(url):
 
 
 class ScrapyHTTPPageGetter(HTTPClient):
-
     delimiter = '\n'
 
     def connectionMade(self):
-        self.headers = Headers() # bucket for response headers
+        self.headers = Headers()  # bucket for response headers
 
         # Method command
         self.sendCommand(self.factory.method, self.factory.path)
@@ -73,9 +72,9 @@ class ScrapyHTTPPageGetter(HTTPClient):
 
     def timeout(self):
         self.transport.loseConnection()
-        self.factory.noPage(\
-                defer.TimeoutError("Getting %s took longer than %s seconds." % \
-                (self.factory.url, self.factory.timeout)))
+        self.factory.noPage( \
+            defer.TimeoutError("Getting %s took longer than %s seconds." % \
+                               (self.factory.url, self.factory.timeout)))
 
 
 class ScrapyHTTPClientFactory(HTTPClientFactory):
@@ -120,7 +119,7 @@ class ScrapyHTTPClientFactory(HTTPClientFactory):
             self.headers.setdefault("Connection", "close")
 
     def _build_response(self, body, request):
-        request.meta['download_latency'] = self.headers_time-self.start_time
+        request.meta['download_latency'] = self.headers_time - self.start_time
         status = int(self.status)
         headers = Headers(self.response_headers)
         respcls = responsetypes.from_args(headers=headers, url=self.url)

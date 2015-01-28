@@ -5,7 +5,7 @@ if twisted_version > (13, 0, 0):
 if twisted_version >= (11, 1, 0):
     from . import client, endpoints
 else:
-    from ants.exceptions import NotSupported
+    from ants.utils.exceptions import NotSupported
     class _Mocked(object):
         def __init__(self, *args, **kw):
             raise NotSupported('HTTP1.1 not supported')

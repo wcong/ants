@@ -1,7 +1,6 @@
 """Download handlers for http and https schemes"""
 
 import re
-
 from time import time
 from cStringIO import StringIO
 from urlparse import urldefrag
@@ -12,11 +11,10 @@ from twisted.web.http_headers import Headers as TxHeaders
 from twisted.web.iweb import IBodyProducer
 from twisted.internet.error import TimeoutError
 from twisted.web.http import PotentialDataLoss
-from ants.xlib.tx import Agent, ProxyAgent, ResponseDone, \
-    HTTPConnectionPool, TCP4ClientEndpoint
 
+from ants.utils.responsetypes import responsetypes
+from ants.xlib.tx import Agent, ProxyAgent, ResponseDone, HTTPConnectionPool, TCP4ClientEndpoint
 from ants.http import Headers
-from ants.responsetypes import responsetypes
 from ants.crawl.downloader.webclient import _parse
 from ants.utils.misc import load_object
 

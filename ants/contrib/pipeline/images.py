@@ -8,10 +8,10 @@ import hashlib
 from cStringIO import StringIO
 
 from PIL import Image
-
 from ants.utils.misc import md5sum
 from ants.http import Request
-from ants.exceptions import DropItem
+from ants.utils.exceptions import DropItem
+
 #TODO: from ants.contrib.pipeline.media import MediaPipeline
 from ants.contrib.pipeline.files import FileException, FilesPipeline
 
@@ -111,7 +111,7 @@ class ImagesPipeline(FilesPipeline):
     def file_path(self, request, response=None, info=None):
         ## start of deprecation warning block (can be removed in the future)
         def _warn():
-            from ants.exceptions import ScrapyDeprecationWarning
+            from ants.utils.exceptions import ScrapyDeprecationWarning
             import warnings
             warnings.warn('ImagesPipeline.image_key(url) and file_key(url) methods are deprecated, '
                           'please use file_path(request, response=None, info=None) instead',
@@ -139,7 +139,7 @@ class ImagesPipeline(FilesPipeline):
     def thumb_path(self, request, thumb_id, response=None, info=None):
         ## start of deprecation warning block (can be removed in the future)
         def _warn():
-            from ants.exceptions import ScrapyDeprecationWarning
+            from ants.utils.exceptions import ScrapyDeprecationWarning
             import warnings
             warnings.warn('ImagesPipeline.thumb_key(url) method is deprecated, please use '
                           'thumb_path(request, thumb_id, response=None, info=None) instead',

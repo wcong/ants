@@ -6,7 +6,7 @@ from twisted.internet import defer
 from ants.utils.defer import defer_result, defer_succeed, parallel, iter_errback
 from ants.utils.spider import iterate_spider_output
 from ants.utils.misc import load_object
-from ants.exceptions import CloseSpider, DropItem, IgnoreRequest
+from ants.utils.exceptions import CloseSpider, DropItem, IgnoreRequest
 from ants import signals
 from ants.http import Request, Response
 from ants.item import BaseItem
@@ -126,6 +126,7 @@ class Scraper(object):
         else:
             # FIXME: don't ignore errors in spider middleware
             dfd = self.call_spider(request_result, request, spider)
+            self.engine.send_request_result(request, str(request_result.value))
             return dfd.addErrback(self._log_download_errors, request_result, request, spider)
 
     @staticmethod

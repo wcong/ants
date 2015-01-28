@@ -1,17 +1,15 @@
 __author__ = 'wcong'
-import json
-from ants import manager
+import pickle
+import logging
+
 import multicast
 import transport
 from ants.webservice import webservice
 from ants.cluster import cluster
-from ants.crawl import crawl
+from ants.crawl import crawl, spidermanager
 import nodeinfo
 import rpc
-import pickle
-from ants.utils import jsonextends
-import logging
-from ants import spidermanager
+from ants.utils import manager
 
 
 '''

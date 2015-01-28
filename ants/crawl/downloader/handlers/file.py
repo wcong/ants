@@ -1,6 +1,8 @@
 from w3lib.url import file_uri_to_path
-from ants.responsetypes import responsetypes
+
+from ants.utils.responsetypes import responsetypes
 from ants.utils.decorator import defers
+
 
 class FileDownloadHandler(object):
 

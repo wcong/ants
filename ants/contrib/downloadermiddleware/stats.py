@@ -1,4 +1,4 @@
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.utils.request import request_httprepr
 from ants.utils.response import response_httprepr
 

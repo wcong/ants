@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import re
+
+from w3lib import html
+
 from ants.utils import log
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.http import HtmlResponse
 from ants.utils.response import _noscript_re, _script_re
-from w3lib import html
 
 
 class AjaxCrawlMiddleware(object):

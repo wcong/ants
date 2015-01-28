@@ -1,9 +1,10 @@
 # encodung=utf8
+from ants.utils import manager
+
 __author__ = 'wcong'
 import socket
 import threading
 import time
-from ants import manager
 import logging
 
 '''

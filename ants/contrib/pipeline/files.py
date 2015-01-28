@@ -15,7 +15,7 @@ from twisted.internet import defer, threads
 
 from ants.utils import log
 from ants.contrib.pipeline.media import MediaPipeline
-from ants.exceptions import NotConfigured, IgnoreRequest
+from ants.utils.exceptions import NotConfigured, IgnoreRequest
 from ants.http import Request
 from ants.utils.misc import md5sum
 
@@ -265,7 +265,7 @@ class FilesPipeline(MediaPipeline):
     def file_path(self, request, response=None, info=None):
         # # start of deprecation warning block (can be removed in the future)
         def _warn():
-            from ants.exceptions import ScrapyDeprecationWarning
+            from ants.utils.exceptions import ScrapyDeprecationWarning
             import warnings
 
             warnings.warn('FilesPipeline.file_key(url) method is deprecated, please use '

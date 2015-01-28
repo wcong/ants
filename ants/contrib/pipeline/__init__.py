@@ -4,7 +4,7 @@ Item pipeline
 See documentation in docs/item-pipeline.rst
 """
 
-from ants.middleware import MiddlewareManager
+from ants.utils.middleware import MiddlewareManager
 from ants.utils.conf import build_component_list
 
 class ItemPipelineManager(MiddlewareManager):
@@ -15,7 +15,7 @@ class ItemPipelineManager(MiddlewareManager):
     def _get_mwlist_from_settings(cls, settings):
         item_pipelines = settings['ITEM_PIPELINES']
         if isinstance(item_pipelines, (tuple, list, set, frozenset)):
-            from ants.exceptions import ScrapyDeprecationWarning
+            from ants.utils.exceptions import ScrapyDeprecationWarning
             import warnings
             warnings.warn('ITEM_PIPELINES defined as a list or a set is deprecated, switch to a dict',
                 category=ScrapyDeprecationWarning, stacklevel=1)

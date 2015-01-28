@@ -1,5 +1,6 @@
 import logging
-from ants.exceptions import NotConfigured
+
+from ants.utils.exceptions import NotConfigured
 from ants import signals
 
 

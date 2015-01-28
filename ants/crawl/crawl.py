@@ -1,9 +1,10 @@
 __author__ = 'wcong'
 
-from ants import spidermanager
+from twisted.internet import reactor
+
 import engine
 from ants.crawl import scheduler
-from twisted.internet import reactor
+
 
 '''
 crawl server and client
@@ -33,7 +34,7 @@ class CrawlServer():
     def init_spider_job(self, spider_name):
         if spider_name in self.running_spider_dict:
             raise RunningJobException()
-        spider = self.spider_manager.create(spider_name)
+        spider = self.spider_manager.create(spider_name, settings=self.settings)
         crawl_engine = engine.EngineServer(spider, self.cluster_manager, self.scheduler)
         self.running_spider_dict[spider_name] = crawl_engine
 
@@ -97,6 +98,7 @@ class CrawlClient():
     STATUS_STOP = 2
 
     def __init__(self, node_manager):
+        self.settings = node_manager.settings
         self.status = self.STATUS_STOP
         self.node_manager = node_manager
         self.spider_manager = self.node_manager.spider_manager
@@ -109,7 +111,7 @@ class CrawlClient():
     def init_engine(self, spider_name):
         if spider_name in self.running_spider_dict:
             raise RunningJobException()
-        spider = self.spider_manager.create(spider_name)
+        spider = self.spider_manager.create(spider_name, settings=self.settings)
         crawl_engine = engine.EngineClient(spider, self.node_manager, self.scheduler)
         self.running_spider_dict[spider_name] = crawl_engine
         self.run()

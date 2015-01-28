@@ -1,5 +1,7 @@
 import warnings
-from ants.exceptions import ScrapyDeprecationWarning
+
+from ants.utils.exceptions import ScrapyDeprecationWarning
+
 
 DEPRECATED_SETTINGS = [
     ('TRACK_REFS', 'no longer needed (trackref is always enabled)'),

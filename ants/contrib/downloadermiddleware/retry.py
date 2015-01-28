@@ -24,7 +24,7 @@ from twisted.internet.error import TimeoutError, DNSLookupError, \
     ConnectionLost, TCPTimedOutError
 
 from ants.utils import log
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.utils.response import response_status_message
 from ants.xlib.tx import ResponseFailed
 

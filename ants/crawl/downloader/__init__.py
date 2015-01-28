@@ -8,7 +8,7 @@ from twisted.internet import reactor, defer, task
 from ants.utils.defer import mustbe_deferred
 from ants.utils.httpobj import urlparse_cached
 from ants.resolver import dnscache
-from ants.exceptions import ScrapyDeprecationWarning
+from ants.utils.exceptions import ScrapyDeprecationWarning
 from ants import signals
 from .middleware import DownloaderMiddlewareManager
 from .handlers import DownloadHandlers

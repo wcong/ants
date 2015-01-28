@@ -1,5 +1,5 @@
 from ants import optional_features
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.utils.httpobj import urlparse_cached
 from .http import HTTPDownloadHandler
 

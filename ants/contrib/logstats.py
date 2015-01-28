@@ -1,6 +1,6 @@
 from twisted.internet import task
 
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants import  signals
 from ants.utils import log
 

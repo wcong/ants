@@ -1,10 +1,8 @@
 """Download handlers for different schemes"""
 
-from twisted.internet import defer
-from ants.exceptions import NotSupported, NotConfigured
+from ants.utils.exceptions import NotSupported, NotConfigured
 from ants.utils.httpobj import urlparse_cached
 from ants.utils.misc import load_object
-from ants import signals
 
 
 class DownloadHandlers(object):

@@ -2,7 +2,8 @@
 
 import warnings
 import inspect
-from ants.exceptions import ScrapyDeprecationWarning
+
+from ants.utils.exceptions import ScrapyDeprecationWarning
 
 
 def attribute(obj, oldattr, newattr, version='0.12'):

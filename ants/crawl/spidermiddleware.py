@@ -5,7 +5,8 @@ See documentation in docs/topics/spider-middleware.rst
 """
 
 from twisted.python.failure import Failure
-from ants.middleware import MiddlewareManager
+
+from ants.utils.middleware import MiddlewareManager
 from ants.utils.defer import mustbe_deferred
 from ants.utils.conf import build_component_list
 

@@ -32,18 +32,9 @@ class Spider(object_ref):
         """
         log.spider_log(message, spider=self, level=level, **kw)
 
-    def set_crawler(self, crawler):
-        assert not hasattr(self, '_crawler'), "Spider already bounded to %s" % crawler
-        self._crawler = crawler
-
-    @property
-    def crawler(self):
-        assert hasattr(self, '_crawler'), "Spider not bounded to any crawler"
-        return self._crawler
-
     @property
     def settings(self):
-        return self.crawler.settings
+        return self.settings
 
     def start_requests(self):
         for url in self.start_urls:

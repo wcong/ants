@@ -7,7 +7,7 @@ See documentation in docs/topics/extensions.rst
 import gc
 
 from ants import signals
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.utils.trackref import live_refs
 
 

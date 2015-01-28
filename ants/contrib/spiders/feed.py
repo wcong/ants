@@ -10,7 +10,7 @@ from ants.http import Request
 from ants.utils.iterators import xmliter, csviter
 from ants.utils.spider import iterate_spider_output
 from ants.selector import Selector
-from ants.exceptions import NotConfigured, NotSupported
+from ants.utils.exceptions import NotConfigured, NotSupported
 
 
 class XMLFeedSpider(Spider):

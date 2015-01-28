@@ -3,7 +3,7 @@ The Extension Manager
 
 See documentation in docs/topics/extensions.rst
 """
-from ants.middleware import MiddlewareManager
+from ants.utils.middleware import MiddlewareManager
 from ants.utils.conf import build_component_list
 
 class ExtensionManager(MiddlewareManager):

@@ -3,7 +3,7 @@ HttpError Spider Middleware
 
 See documentation in docs/topics/spider-middleware.rst
 """
-from ants.exceptions import IgnoreRequest
+from ants.utils.exceptions import IgnoreRequest
 from ants.utils import log
 
 

@@ -10,7 +10,7 @@ from cStringIO import StringIO
 from tempfile import mktemp
 
 from ants.utils import log
-from ants.responsetypes import responsetypes
+from ants.utils.responsetypes import responsetypes
 
 
 class DecompressionMiddleware(object):

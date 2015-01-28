@@ -3,7 +3,7 @@ from functools import wraps
 
 from twisted.internet import defer, threads
 
-from ants.exceptions import ScrapyDeprecationWarning
+from ants.utils.exceptions import ScrapyDeprecationWarning
 
 
 def deprecated(use_instead=None):

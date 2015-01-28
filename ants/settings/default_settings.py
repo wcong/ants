@@ -95,7 +95,7 @@ DOWNLOADER_MIDDLEWARES_BASE = {
 
 DOWNLOADER_STATS = True
 
-DUPEFILTER_CLASS = 'ants.dupefilter.RFPDupeFilter'
+DUPEFILTER_CLASS = 'ants.utils.dupefilter.RFPDupeFilter'
 
 try:
     EDITOR = os.environ['EDITOR']

@@ -4,7 +4,9 @@ Feed Exports extension
 See documentation in docs/topics/feed-exports.rst
 """
 
-import sys, os, posixpath
+import sys
+import os
+import posixpath
 from tempfile import TemporaryFile
 from datetime import datetime
 from urlparse import urlparse
@@ -16,7 +18,7 @@ from w3lib.url import file_uri_to_path
 
 from ants import signals
 from ants.utils.ftp import ftp_makedirs_cwd
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.utils.misc import load_object
 from ants.utils.python import get_func_args
 from ants.utils import log
@@ -80,7 +82,10 @@ class FileFeedStorage(object):
 
 class S3FeedStorage(BlockingFeedStorage):
     def __init__(self, uri):
-        from ants.conf import settings
+
+        from ants.utils.project import get_project_settings
+
+        settings = get_project_settings()
 
         try:
             import boto
@@ -153,7 +158,7 @@ class FeedExporter(object):
         if len(get_func_args(cls)) < 1:
             # FIXME: remove for ants 0.17
             import warnings
-            from ants.exceptions import ScrapyDeprecationWarning
+            from ants.utils.exceptions import ScrapyDeprecationWarning
 
             warnings.warn("%s must receive a settings object as first constructor argument." % cls.__name__,
                           ScrapyDeprecationWarning, stacklevel=2)

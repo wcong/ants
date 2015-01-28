@@ -1,8 +1,9 @@
 '''
 what a cluster should have
 '''
+from ants.utils import manager
+
 __author__ = 'wcong'
-from ants import manager
 import logging
 from ants.node import nodeinfo
 from ants.crawl import crawl

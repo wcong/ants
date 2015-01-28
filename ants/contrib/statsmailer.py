@@ -6,7 +6,7 @@ Use STATSMAILER_RCPTS setting to enable and give the recipient mail address
 
 from ants import signals
 from ants.mail import MailSender
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 
 class StatsMailer(object):
 

@@ -1,6 +1,7 @@
 from email.utils import formatdate
+
 from ants import signals
-from ants.exceptions import NotConfigured, IgnoreRequest
+from ants.utils.exceptions import NotConfigured, IgnoreRequest
 from ants.utils.misc import load_object
 
 
@@ -91,7 +92,7 @@ class FilesystemCacheStorage(_FilesystemCacheStorage):
 
     def __init__(self, *args, **kwargs):
         import warnings
-        from ants.exceptions import ScrapyDeprecationWarning
+        from ants.utils.exceptions import ScrapyDeprecationWarning
         warnings.warn('Importing FilesystemCacheStorage from '
                       'ants.contrib.downloadermiddlware.httpcache is '
                       'deprecated, use ants.contrib.httpcache instead.',

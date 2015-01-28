@@ -6,7 +6,7 @@ spiders
 from zope.interface import implements
 
 from ants import signals
-from ants.interfaces import ISpiderManager
+from ants.utils.interfaces import ISpiderManager
 from ants.utils.misc import walk_modules
 from ants.utils.spider import iter_spider_classes
 

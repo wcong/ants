@@ -3,7 +3,7 @@ from urlparse import urljoin
 from ants.utils import log
 from ants.http import HtmlResponse
 from ants.utils.response import get_meta_refresh
-from ants.exceptions import IgnoreRequest, NotConfigured
+from ants.utils.exceptions import IgnoreRequest, NotConfigured
 
 
 class BaseRedirectMiddleware(object):

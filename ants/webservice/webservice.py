@@ -1,4 +1,6 @@
 # encoding=utf8
+from ants.utils import manager
+
 __author__ = 'wcong'
 '''
 control crawl and get crawl status
@@ -6,7 +8,6 @@ control crawl and get crawl status
 
 from twisted.web import server, resource
 from twisted.internet import reactor
-from ants import manager
 from ants.utils.jsonextends import JSON
 import datetime
 import json

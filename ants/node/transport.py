@@ -1,8 +1,9 @@
 # encoding=utf8
+from ants.utils import manager
+
 __author__ = 'wcong'
 
 from twisted.internet import reactor, protocol
-from ants import manager
 import logging
 import pickle
 import rpc

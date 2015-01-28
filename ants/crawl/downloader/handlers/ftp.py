@@ -37,7 +37,8 @@ from twisted.protocols.ftp import FTPClient, CommandFailed
 from twisted.internet.protocol import Protocol, ClientCreator
 
 from ants.http import Response
-from ants.responsetypes import responsetypes
+from ants.utils.responsetypes import responsetypes
+
 
 class ReceivedDataProtocol(Protocol):
     def __init__(self, filename=None):

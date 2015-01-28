@@ -1,15 +1,17 @@
 # encoding=utf8
 __author__ = 'wcong'
 import datetime
+import logging
+
+from twisted.python.failure import Failure
+
 import scrapy
 from ants.utils import log
-import logging
 import downloader
-from ants.extension import ExtensionManager
+from ants.utils.extension import ExtensionManager
 from ants.signalmanager import SignalManager
 from ants.http import Response, Request
 from ants import signals
-from twisted.python.failure import Failure
 from ants.utils.misc import load_object
 
 

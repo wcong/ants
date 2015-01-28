@@ -6,7 +6,7 @@ See documentation in docs/topics/spider-middleware.rst
 
 from ants.utils import log
 from ants.http import Request
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 
 
 class UrlLengthMiddleware(object):

@@ -4,7 +4,7 @@ from urllib2 import _parse_proxy
 from urlparse import urlunparse
 
 from ants.utils.httpobj import urlparse_cached
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 
 
 class HttpProxyMiddleware(object):

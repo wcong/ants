@@ -4,7 +4,7 @@ originated it.
 """
 
 from ants.http import Request
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 
 class RefererMiddleware(object):
 

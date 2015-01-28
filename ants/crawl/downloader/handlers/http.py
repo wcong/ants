@@ -9,10 +9,10 @@ else:
 
 # backwards compatibility
 class HttpDownloadHandler(HTTP10DownloadHandler):
-
     def __init__(self, *args, **kwargs):
         import warnings
-        from ants.exceptions import ScrapyDeprecationWarning
+        from ants.utils.exceptions import ScrapyDeprecationWarning
+
         warnings.warn('HttpDownloadHandler is deprecated, import ants.crawl.downloader'
                       '.handlers.http10.HTTP10DownloadHandler instead',
                       category=ScrapyDeprecationWarning, stacklevel=1)

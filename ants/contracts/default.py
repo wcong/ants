@@ -1,6 +1,6 @@
 from ants.item import BaseItem
 from ants.http import Request
-from ants.exceptions import ContractFail
+from ants.utils.exceptions import ContractFail
 
 from . import Contract
 

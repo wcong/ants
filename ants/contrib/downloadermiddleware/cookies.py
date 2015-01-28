@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.http import Response
 from ants.http.cookies import CookieJar
 from ants.utils import log

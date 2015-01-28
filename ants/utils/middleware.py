@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 from ants.utils.misc import load_object
 from ants.utils.defer import process_parallel, process_chain, process_chain_both
 from ants.utils import log

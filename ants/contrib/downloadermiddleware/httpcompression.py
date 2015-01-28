@@ -1,21 +1,21 @@
 import zlib
 
+from ants.utils.responsetypes import responsetypes
 from ants.utils.gz import gunzip, is_gzipped
 from ants.http import Response, TextResponse
-from ants.responsetypes import responsetypes
-from ants.exceptions import NotConfigured
+from ants.utils.exceptions import NotConfigured
 
 
 class HttpCompressionMiddleware(object):
     """This middleware allows compressed (gzip, deflate) traffic to be
     sent/received from web sites"""
-    
+
     @classmethod
     def from_crawler(cls, crawler):
         if not crawler.settings.getbool('COMPRESSION_ENABLED'):
             raise NotConfigured
         return cls()
-    
+
     def process_request(self, request, spider):
         request.headers.setdefault('Accept-Encoding', 'gzip,deflate')
 
@@ -26,7 +26,7 @@ class HttpCompressionMiddleware(object):
                 encoding = content_encoding.pop()
                 decoded_body = self._decode(response.body, encoding.lower())
                 respcls = responsetypes.from_args(headers=response.headers, \
-                    url=response.url)
+                                                  url=response.url)
                 kwargs = dict(cls=respcls, body=decoded_body)
                 if issubclass(respcls, TextResponse):
                     # force recalculating the encoding until we make sure the
