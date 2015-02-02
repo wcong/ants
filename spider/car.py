@@ -152,9 +152,11 @@ class CarSpider(ants.Spider):
         return first_time_list
 
     def go_to_input_page(self, response):
+        meta = response.meta
+        meta['follow_cookiejar'] = True
         yield ants.Request(self.domain + '/baoyang/?' + str(random.random()) + '#check',
                            callback='input_mile',
-                           meta=response.meta)
+                           meta=meta)
 
     def input_mile(self, response):
         meta = response.meta

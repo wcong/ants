@@ -31,6 +31,8 @@ class CrawlServer():
         self.stop_spider_dict = dict()
         self.distribute_index = 0
 
+        self.distribute_node_list = list(self.cluster_manager.cluster_info.node_list)
+
     def init_spider_job(self, spider_name):
         if spider_name in self.running_spider_dict:
             raise RunningJobException()
@@ -69,10 +71,12 @@ class CrawlServer():
             return
         request = self.scheduler.next_request()
         if request:
-            self.distribute_node_list = list(self.cluster_manager.cluster_info.node_list)
-            if 'cookiejar' in request.meta:
+            if 'follow_cookiejar' in request.meta:
                 node_info = self.cluster_manager.cluster_info.get_node_by_name(request.node_name)
-                self.distribute_node_list.remove(node_info)
+                try:
+                    self.distribute_node_list.remove(node_info)
+                except:
+                    pass
             else:
                 if not self.distribute_node_list:
                     self.distribute_node_list = list(self.cluster_manager.cluster_info.node_list)
