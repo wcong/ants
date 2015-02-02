@@ -78,7 +78,7 @@ def request_add_me(tcp, msg):
 def request_init_engine(tcp, msg):
     tcp.transport_manager.node_manager.init_engine(msg)
     return_msg = rpc.RESPONSE_INIT_REQUEST + str(tcp.transport_manager.port) + ':' + msg + ':' + 'ok'
-    tcp.transport.write(return_msg)
+    tcp.transport.write(return_msg + rpc.END_SIGN)
 
 
 def response_init_engine(tcp, msg):
@@ -91,7 +91,7 @@ def response_init_engine(tcp, msg):
 def request_is_spider_idle(tcp, msg):
     result = tcp.transport_manager.node_manager.is_idle(msg)
     tcp.transport.write(
-        rpc.RESPONSE_SPIDER_IDLE_STATUS + str(tcp.transport_manager.port) + ':' + msg + ':' + result)
+        rpc.RESPONSE_SPIDER_IDLE_STATUS + str(tcp.transport_manager.port) + ':' + msg + ':' + result + rpc.END_SIGN)
 
 
 def response_spider_idle_status(tcp, msg):
@@ -113,7 +113,10 @@ def request_send_request(tcp, msg):
 
 
 def response_send_request(tcp, msg):
-    tcp.transport_manager.node_manager.send_request_to_master(pickle.loads(msg))
+    try:
+        tcp.transport_manager.node_manager.send_request_to_master(pickle.loads(msg))
+    except:
+        print msg
 
 
 def request_result_of_request(tcp, msg):
@@ -124,7 +127,7 @@ def request_result_of_request(tcp, msg):
 def request_stop_engine(tcp, msg):
     tcp.transport_manager.node_manager.stop_engine(msg)
     return_msg = rpc.RESPONSE_STOP_ENGINE + str(tcp.transport_manager.port) + ':' + msg + ':' + 'ok'
-    tcp.transport.write(return_msg)
+    tcp.transport.write(return_msg + rpc.END_SIGN)
 
 
 def response_stop_engine(tcp, msg):
@@ -159,15 +162,27 @@ class TransportServerFactory(protocol.Factory):
 class TransportServer(protocol.Protocol):
     def __init__(self, transport_manager):
         self.transport_manager = transport_manager
+        self.tmp_data = ''
 
     def dataReceived(self, data):
-        msg_list = data.split(rpc.END_SIGN)
+        if not data.endswith(rpc.END_SIGN):
+            self.tmp_data += data
+            return
+        if self.tmp_data:
+            complete_data = self.tmp_data + data
+            self.tmp_data = ''
+        else:
+            complete_data = data
+        msg_list = complete_data.split(rpc.END_SIGN)
         for msg in msg_list:
             if msg:
                 type = msg[0:rpc.LENGTH]
                 logging.info('get msg:' + type)
-                data = msg[rpc.LENGTH:]
-                response_dict[type](self, data)
+                one_data = msg[rpc.LENGTH:]
+                try:
+                    response_dict[type](self, one_data)
+                except Exception, e:
+                    print e
 
 
 class TransportClient(protocol.Protocol):
@@ -178,7 +193,7 @@ class TransportClient(protocol.Protocol):
     def connectionMade(self):
         self.transport_manager.add_client_dict(self.addr.host, self.addr.port, self)
         self.transport_manager.connect_made(self.addr.host, self.addr.port)
-        self.transport.write(rpc.REQUEST_ADD_ME + str(self.transport_manager.port))
+        self.transport.write(rpc.REQUEST_ADD_ME + str(self.transport_manager.port) + rpc.END_SIGN)
 
     def send_message(self, message):
         self.transport.write(message + rpc.END_SIGN)

@@ -76,6 +76,10 @@ class EngineClient():
         self.signals.disconnect_all()
 
     def accept_request(self, request):
+        if hasattr(request, "callback"):
+            callback = getattr(request, "callback")
+            if isinstance(callback, str):
+                request.callback = getattr(self.spider, callback)
         request.spider_name = self.spider.name
         self.scheduler.push_queue_request(request)
         self.status.waiting_list.append(request)
@@ -84,6 +88,10 @@ class EngineClient():
         request.spider_name = self.spider.name
         request.source_hash_code = source_request.hash_code
         request.node_name = self.node_manager.node_info.name
+        if hasattr(request, "callback"):
+            callback = getattr(request, "callback")
+            if type(callback).__name__ == 'instancemethod':
+                request.callback = callback.__name__
         self.node_manager.send_request_to_master(request)
 
     def send_request_result(self, request, msg='ok'):

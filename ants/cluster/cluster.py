@@ -111,6 +111,11 @@ class ClusterInfo():
     def change_master_node(self, node):
         self.master_node = node
 
+    def get_node_by_name(self, name):
+        for node in self.node_list:
+            if node.name == name:
+                return node
+
 
 
 

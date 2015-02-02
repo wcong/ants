@@ -69,13 +69,16 @@ class CrawlServer():
             return
         request = self.scheduler.next_request()
         if request:
-            node_list = self.cluster_manager.cluster_info.node_list
-            if self.distribute_index >= len(node_list):
-                self.distribute_index = 0
-            node_info = node_list[self.distribute_index]
+            self.distribute_node_list = list(self.cluster_manager.cluster_info.node_list)
+            if 'cookiejar' in request.meta:
+                node_info = self.cluster_manager.cluster_info.get_node_by_name(request.node_name)
+                self.distribute_node_list.remove(node_info)
+            else:
+                if not self.distribute_node_list:
+                    self.distribute_node_list = list(self.cluster_manager.cluster_info.node_list)
+                node_info = self.distribute_node_list.pop()
             self.cluster_manager.node_manager.send_request_to_client(request, node_info)
             self.running_spider_dict[request.spider_name].log_distributed_request(request, node_info)
-            self.distribute_index += 1
         reactor.callLater(0, self)
 
     def __call__(self, *args, **kwargs):
