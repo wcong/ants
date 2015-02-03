@@ -44,8 +44,3 @@ class Bootstrap():
         node_manager = node.NodeManager(self.setting)
         node_manager.start()
         reactor.run()
-
-
-if __name__ == '__main__':
-    Bootstrap(sys.argv[1:]).start()
-
