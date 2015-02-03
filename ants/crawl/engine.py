@@ -14,6 +14,7 @@ from ants.http import Response, Request
 from ants import signals
 from ants.utils.misc import load_object
 import json
+from ants.mail import MailSender
 
 
 class EngineServer():
@@ -63,8 +64,12 @@ class EngineServer():
         result = self.status.make_readable_status()
         result['end_time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
         dump_file_name = 'logs/' + self.spider.name + '--' + result['start_time'] + '--' + result['end_time'] + '.log'
+        body = json.dumps(result, indent=4)
         with open(dump_file_name, 'w') as f:
-            f.write(json.dumps(result, indent=4))
+            f.write(body)
+        MailSender().from_settings(self.cluster_manager.settings).send(self.cluster_manager.settings.get('MAIL_LIST'),
+                                                                       subject=self.spider.name,
+                                                                       body=body)
 
 
 class EngineClient():
