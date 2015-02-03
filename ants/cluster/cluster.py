@@ -82,6 +82,10 @@ class ClusterManager(manager.Manager):
 class ClusterInfo():
     def __init__(self, setting, local_node):
         self.name = setting.get('CLUSTER_NAME')
+        self.setting_master = setting.get('MASTER')
+        if self.setting_master:
+            if self.setting_master[0] == '127.0.0.1':
+                self.setting_master[0] = local_node.ip
         self.local_node = local_node
         self.node_list = list()
         self.node_list.append(local_node)
@@ -92,6 +96,9 @@ class ClusterInfo():
         self.elect_master()
 
     def elect_master(self):
+        if self.setting_master:
+            self.choose_setting_master()
+            return
         master_node = self.node_list[0]
         for had_node in self.node_list:
             if had_node.name < master_node.name:
@@ -99,6 +106,14 @@ class ClusterInfo():
         if master_node != self.master_node:
             logging.info("elect node:ip:" + master_node.ip + ';port:' + str(master_node.port) + ';master')
             self.master_node = master_node
+
+    def choose_setting_master(self):
+        if self.master_node.ip == self.setting_master[0] and self.master_node.port == self.setting_master[1]:
+            return
+        for had_node in self.node_list:
+            if had_node.ip == self.setting_master[0] and had_node.port == self.setting_master[1]:
+                self.master_node = had_node
+                break
 
     def contain_node(self, new_node):
         for old_node in self.node_list:
