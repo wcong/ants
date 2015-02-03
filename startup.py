@@ -3,6 +3,12 @@
 import os
 from ants.bootstrap.bootstrap import Bootstrap
 import sys
+import logging
+
+logging.basicConfig(format="[%(asctime)s %(module)s %(lineno)d]%(levelname)s:%(message)s",
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    filename="logs/crawl.log",
+                    level=logging.DEBUG)
 
 pwd = os.getcwd()
 if 'PYTHONPATH' in os.environ:
