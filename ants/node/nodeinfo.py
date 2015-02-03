@@ -7,6 +7,7 @@ class NodeInfo:
         self.name = hash(ip + str(port))
         self.ip = ip
         self.port = port
+        self.init_status = 0
 
     def __eq__(self, other):
         return self.name == other.name

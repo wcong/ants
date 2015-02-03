@@ -17,6 +17,7 @@ let the node do what he need to do
 
 logging.basicConfig(format="[%(asctime)s %(module)s %(lineno)d]%(levelname)s:%(message)s",
                     datefmt='%Y-%m-%d %H:%M:%S',
+                    filename="logs/crawl.log",
                     level=logging.DEBUG)
 
 parser = argparse.ArgumentParser(description='ants -- scale crawler')

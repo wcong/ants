@@ -67,16 +67,6 @@ class NodeManager(manager.Manager):
     def add_node_to_cluster(self, ip, port):
         self.cluster_manager.add_node(ip, port)
 
-    def is_idle(self, spider_name, node=None):
-        if not node or node == self.node_info:
-            if self.crawl_client.is_idle(spider_name):
-                self.idle_engine_manager(spider_name, self.node_info.ip, self.node_info.port)
-        else:
-            self.transport_manager.send_request(node.ip, node.port, rpc.REQUEST_INIT_ENGINE + spider_name)
-
-    def idle_engine_manager(self, spider_name, ip, port):
-        self.cluster_manager.idle_engine_manager(spider_name, nodeinfo.NodeInfo(ip, port))
-
     def init_engine(self, spider_name, node=None):
         if not node or node == self.node_info:
             self.crawl_client.init_engine(spider_name)
@@ -116,8 +106,9 @@ class NodeManager(manager.Manager):
                 self.cluster_manager.accept_result_of_request(request.spider_name,
                                                               request.node_name,
                                                               request.source_hash_code,
-                                                              'request')
+                                                              'ok')
         else:
+
             self.transport_manager.send_request(master_node.ip, master_node.port,
                                                 rpc.RESPONSE_SEND_REQUEST + pickle.dumps(request))
 

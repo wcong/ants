@@ -68,7 +68,6 @@ class ClusterManager(manager.Manager):
     def accept_result_of_request(self, spider_name, node_name, request_code, msg):
         self.crawl_server.accept_crawl_result(spider_name, node_name, request_code, msg)
 
-
     def stop_all_node(self, spider_name):
         self.crawl_server.init_stop_job_dict(spider_name, self.cluster_info.node_list)
         for node in self.cluster_info.node_list:
@@ -115,8 +114,3 @@ class ClusterInfo():
         for node in self.node_list:
             if node.name == name:
                 return node
-
-
-
-
-

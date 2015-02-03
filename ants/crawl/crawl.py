@@ -66,6 +66,7 @@ class CrawlServer():
             self.status = self.STATUS_STOP
 
 
+
     def distribute(self):
         if self.status == self.STATUS_STOP:
             return

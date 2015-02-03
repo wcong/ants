@@ -13,6 +13,7 @@ from ants.signalmanager import SignalManager
 from ants.http import Response, Request
 from ants import signals
 from ants.utils.misc import load_object
+import json
 
 
 class EngineServer():
@@ -46,7 +47,10 @@ class EngineServer():
         del_index = None
         for index, request in enumerate(self.status.distribute_dict[node_name]):
             if request.hash_code == request_hash_code:
-                self.status.crawled_dict.setdefault(node_name, list()).append(request)
+                if msg == 'ok':
+                    self.status.ok_crawled_dict.setdefault(node_name, list()).append(request)
+                else:
+                    self.status.not_ok_crawled_dict.setdefault(node_name, list()).append(request)
                 del_index = index
                 break
         if del_index is not None:
@@ -56,6 +60,11 @@ class EngineServer():
 
     def stop(self):
         logging.info(self.spider.name + " stop")
+        result = self.status.make_readable_status()
+        result['end_time'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        dump_file_name = 'logs/' + self.spider.name + '--' + result['start_time'] + '--' + result['end_time'] + '.log'
+        with open(dump_file_name, 'w') as f:
+            f.write(json.dumps(result, indent=4))
 
 
 class EngineClient():
@@ -157,7 +166,8 @@ class EngineStatus(object):
 class EngineStatusServer(EngineStatus):
     def __init__(self):
         super(EngineStatusServer, self).__init__()
-        self.crawled_dict = dict()
+        self.ok_crawled_dict = dict()
+        self.not_ok_crawled_dict = dict()
         self.distribute_dict = dict()
         self.waiting_list = list()
 
@@ -169,9 +179,11 @@ class EngineStatusServer(EngineStatus):
 
     def make_readable_status(self):
         data = dict()
-        data['crawled_dict'] = {k: len(v) for k, v in self.crawled_dict.iteritems()}
+        data['start_time'] = self.start_time.strftime('%Y-%m-%dT%H:%M:%S')
+        data['ok_crawled_dict'] = {k: len(v) for k, v in self.ok_crawled_dict.iteritems()}
+        data['not_ok_crawled_dict'] = {k: len(v) for k, v in self.not_ok_crawled_dict.iteritems()}
         data['distribute_dict'] = {k: len(v) for k, v in self.distribute_dict.iteritems()}
-        data['waiting_list'] = self.waiting_list
+        data['waiting_list'] = len(self.waiting_list)
         return data
 
 
